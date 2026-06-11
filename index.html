@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fun Cup - Track & Maintenance Expert</title>
+    <title>Fun Cup - Realtime Maintenance Expert</title>
     <style>
         :root {
             --primary: #e60000;
@@ -123,7 +123,6 @@
         }
         input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; }
 
-        /* Style spécifique pour les inputs calendriers dans le tableau */
         .table-date-input {
             width: 130px;
             padding: 5px;
@@ -174,6 +173,15 @@
             align-items: center;
             white-space: nowrap;
         }
+
+        #loading-sync {
+            background-color: #2ecc71;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -181,8 +189,8 @@
 <div class="container">
     <header>
         <div>
-            <h1>Fun Cup - Track & Maintenance Expert</h1>
-            <p>Gestion d'atelier, suivi horaire des composants et feuilles de stand</p>
+            <h1>Fun Cup - Live Track & Maintenance</h1>
+            <p>Base de données centralisée en temps réel pour l'équipe des mécaniciens <span id="loading-sync">🔄 Synchronisé</span></p>
         </div>
         <div class="selector-box">
             <label for="select-voiture">🚗 Sélectionner la Voiture :</label><br>
@@ -279,29 +287,39 @@
     </div>
 </div>
 
-<script>
-    // 1. CATALOGUE OFFICIEL DES PIÈCES FUN CUP
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // VOS CODES OFFICIELS INJECTÉS :
+    const firebaseConfig = {
+        apiKey: "AIzaSyD1Ea_dUlVMyyJhxdyxyoZrR5EIBnvb_iQ",
+        authDomain: "funcup-maintenance.firebaseapp.com",
+        databaseURL: "https://funcup-maintenance-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "funcup-maintenance",
+        storageBucket: "funcup-maintenance.firebasestorage.app",
+        messagingSenderId: "1046060984934",
+        appId: "1:1046060984934:web:00c0c99451268a4cb99ba7"
+    };
+
+    // Initialisation
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
     const cataloguePiecesStandard = [
-        // MOTEUR & PÉRIPHÉRIQUES
         { cat: "Moteur", nom: "Moteur VW Evo 3 (Révision Générale)", heuresActuelles: 0, limite: 60, dernierChangement: "" },
         { cat: "Moteur", nom: "Courroie d'Alternateur", heuresActuelles: 0, limite: 20, dernierChangement: "" },
         { cat: "Moteur", nom: "Pompe à Essence Principale", heuresActuelles: 0, limite: 60, dernierChangement: "" },
         { cat: "Moteur", nom: "Faisceau d'Allumage & Bougies", heuresActuelles: 0, limite: 40, dernierChangement: "" },
-        
-        // TRANSMISSION
         { cat: "Transmission", nom: "Boîte de Vitesses Sadev (Révision)", heuresActuelles: 0, limite: 30, dernierChangement: "" },
         { cat: "Transmission", nom: "Cardans AR gauche/droite (Paire)", heuresActuelles: 0, limite: 15, dernierChangement: "" },
         { cat: "Transmission", nom: "Kit Embrayage & Butée", heuresActuelles: 0, limite: 30, dernierChangement: "" },
         { cat: "Transmission", nom: "Lobro / Soufflets de cardan", heuresActuelles: 0, limite: 15, dernierChangement: "" },
-
-        // FREINAGE
         { cat: "Freinage", nom: "Disques de Frein AV", heuresActuelles: 0, limite: 12, dernierChangement: "" },
         { cat: "Freinage", nom: "Disques de Frein AR", heuresActuelles: 0, limite: 24, dernierChangement: "" },
         { cat: "Freinage", nom: "Plaquettes de Frein AV", heuresActuelles: 0, limite: 8, dernierChangement: "" },
         { cat: "Freinage", nom: "Plaquettes de Frein AR", heuresActuelles: 0, limite: 16, dernierChangement: "" },
         { cat: "Freinage", nom: "Maître-Cylindre de Frein", heuresActuelles: 0, limite: 60, dernierChangement: "" },
-
-        // LIAISON AU SOL / DIRECTION
         { cat: "Train Roulant", nom: "Amortisseurs (Paire AV / AR)", heuresActuelles: 0, limite: 30, dernierChangement: "" },
         { cat: "Train Roulant", nom: "Roulements de Roue (Les 4)", heuresActuelles: 0, limite: 30, dernierChangement: "" },
         { cat: "Train Roulant", nom: "Moyeux de Roue AV/AR", heuresActuelles: 0, limite: 60, dernierChangement: "" },
@@ -310,30 +328,41 @@
     ];
 
     let hangar = {};
+    let voitureCourante = "";
 
-    // Chargement des données locales ou initialisation d'une base vierge
-    if (localStorage.getItem("hangarFunCupV4")) {
-        hangar = JSON.parse(localStorage.getItem("hangarFunCupV4"));
-    } else {
-        hangar = {
-            "Voiture Châssis de démo": {
-                pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)),
-                historique: []
-            }
-        };
-        sauvegarderDonnees();
-    }
-
-    let voitureCourante = Object.keys(hangar)[0] || "";
-
-    // Mettre la date du jour au format HTML (AAAA-MM-JJ)
     function obtenirDateDuJour() {
         return new Date().toISOString().split('T')[0];
     }
 
-    function sauvegarderDonnees() {
-        localStorage.setItem("hangarFunCupV4", JSON.stringify(hangar));
-    }
+    // ÉCOUTE ET SYNCHRO DES CHANGEMENTS EN TEMPS RÉEL
+    const dbRef = ref(db, 'hangar');
+    onValue(dbRef, (snapshot) => {
+        const data = snapshot.val();
+        
+        const syncBadge = document.getElementById("loading-sync");
+        syncBadge.style.display = "inline-block";
+        setTimeout(() => { syncBadge.style.display = "none"; }, 1500);
+
+        if (data) {
+            hangar = data;
+            if (!voitureCourante || !hangar[voitureCourante]) {
+                voitureCourante = Object.keys(hangar)[0];
+            }
+        } else {
+            // Si la base est vierge, créer la première structure propre
+            hangar = {
+                "Châssis Exemple #000": {
+                    pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)),
+                    historique: []
+                }
+            };
+            set(ref(db, 'hangar'), hangar);
+            voitureCourante = "Châssis Exemple #000";
+        }
+        
+        rafraichirSelecteur();
+        majAffichage();
+    });
 
     function rafraichirSelecteur() {
         const select = document.getElementById("select-voiture");
@@ -347,40 +376,36 @@
         });
     }
 
-    function changerVoitureCourante() {
+    window.changerVoitureCourante = function() {
         voitureCourante = document.getElementById("select-voiture").value;
         majAffichage();
     }
 
-    // REMISE À ZÉRO D'UNE PIÈCE VIA SON CALENDRIER EN LIGNE
-    function remplacerPieceFormulaire(indexPiece) {
+    window.remplacerPieceFormulaire = function(indexPiece) {
         if (!voitureCourante) return;
         
         let dateInputEl = document.getElementById(`date-change-${indexPiece}`);
         let dateSaisie = dateInputEl.value;
         
         if (!dateSaisie) {
-            alert("Veuillez sélectionner une date valide dans le calendrier avant de valider.");
+            alert("Sélectionnez une date.");
             return;
         }
 
         let piece = hangar[voitureCourante].pieces[indexPiece];
-        
-        // Conversion de la date au format FR (JJ/MM/AAAA)
         let parts = dateSaisie.split("-");
         let dateFr = `${parts[2]}/${parts[1]}/${parts[0]}`;
 
-        if (confirm(`Confirmez-vous le changement de la pièce "${piece.nom}" en date du ${dateFr} ?`)) {
-            piece.heuresActuelles = 0;
-            piece.dernierChangement = dateFr;
-            
-            sauvegarderDonnees();
-            majAffichage();
+        if (confirm(`Changement de la pièce "${piece.nom}" en date du ${dateFr} ?`)) {
+            update(ref(db, `hangar/${voitureCourante}/pieces/${indexPiece}`), {
+                heuresActuelles: 0,
+                dernierChangement: dateFr
+            });
         }
     }
 
     function majAffichage() {
-        if (!voitureCourante) return;
+        if (!voitureCourante || !hangar[voitureCourante]) return;
 
         document.getElementById("titre-voiture-alertes").textContent = voitureCourante;
         document.getElementById("titre-voiture-historique").textContent = voitureCourante;
@@ -388,53 +413,53 @@
         let donneesVoiture = hangar[voitureCourante];
         let dateAujourdhui = obtenirDateDuJour();
 
-        // 1. Remplissage du tableau des pièces
         const tbodyPieces = document.querySelector("#table-alertes tbody");
         tbodyPieces.innerHTML = "";
         
-        donneesVoiture.pieces.forEach((piece, index) => {
-            let reste = piece.limite - piece.heuresActuelles;
-            let statutClass = "status-ok";
-            let statutTexte = "OK";
+        if(donneesVoiture.pieces) {
+            donneesVoiture.pieces.forEach((piece, index) => {
+                let reste = piece.limite - piece.heuresActuelles;
+                let statutClass = "status-ok";
+                let statutTexte = "OK";
 
-            if (reste <= 0) {
-                statutClass = "status-danger";
-                statutTexte = "Changement";
-            } else if (reste <= 4) {
-                statutClass = "status-warn";
-                statutTexte = "À Prévoir";
-            }
+                if (reste <= 0) {
+                    statutClass = "status-danger";
+                    statutTexte = "Changement";
+                } else if (reste <= 4) {
+                    statutClass = "status-warn";
+                    statutTexte = "À Prévoir";
+                }
 
-            let infoDate = piece.dernierChangement ? `Monté le : ${piece.dernierChangement}` : "Aucun historique date";
+                let infoDate = piece.dernierChangement ? `Monté le : ${piece.dernierChangement}` : "Aucun historique date";
 
-            let tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td style="color: #666; font-size:12px;"><strong>${piece.cat}</strong></td>
-                <td>
-                    <strong>${piece.nom}</strong>
-                    <span class="date-changement">${infoDate}</span>
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td style="color: #666; font-size:12px;"><strong>${piece.cat}</strong></td>
+                    <td>
+                        <strong>${piece.nom}</strong>
+                        <span class="date-changement">${infoDate}</span>
+                    </td>
+                    <td>${piece.heuresActuelles.toFixed(2)} h</td>
+                    <td>${piece.limite} h</td>
+                    <td style="color: ${reste <= 4 ? 'var(--danger)' : 'inherit'}; font-weight: ${reste <= 4 ? 'bold' : 'normal'}">
+                        ${reste.toFixed(2)} h
                 </td>
-                <td>${piece.heuresActuelles.toFixed(2)} h</td>
-                <td>${piece.limite} h</td>
-                <td style="color: ${reste <= 4 ? 'var(--danger)' : 'inherit'}; font-weight: ${reste <= 4 ? 'bold' : 'normal'}">
-                    ${reste.toFixed(2)} h
-                </td>
-                <td><span class="status ${statutClass}">${statutTexte}</span></td>
-                <td>
-                    <div class="action-cell">
-                        <input type="date" id="date-change-${index}" class="table-date-input" value="${dateAujourdhui}">
-                        <button class="btn-reset" onclick="remplacerPieceFormulaire(${index})">🛠️ Remplacer</button>
-                    </div>
-                </td>
-            `;
-            tbodyPieces.appendChild(tr);
-        });
+                    <td><span class="status ${statutClass}">${statutTexte}</span></td>
+                    <td>
+                        <div class="action-cell">
+                            <input type="date" id="date-change-${index}" class="table-date-input" value="${dateAujourdhui}">
+                            <button class="btn-reset" onclick="remplacerPieceFormulaire(${index})">🛠️ Remplacer</button>
+                        </div>
+                    </td>
+                `;
+                tbodyPieces.appendChild(tr);
+            });
+        }
 
-        // 2. Remplissage du tableau de course (Historique)
         const tbodyCourse = document.querySelector("#table-course tbody");
         tbodyCourse.innerHTML = "";
         
-        if (donneesVoiture.historique.length === 0) {
+        if (!donneesVoiture.historique || donneesVoiture.historique.length === 0) {
             tbodyCourse.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999; font-style:italic;">Aucune session de course enregistrée. Saisissez un roulage à gauche.</td></tr>`;
         } else {
             donneesVoiture.historique.forEach(session => {
@@ -451,7 +476,6 @@
         }
     }
 
-    // ACTION : CREATION NOUVELLE VOITURE
     document.getElementById("form-voiture").addEventListener("submit", function(e) {
         e.preventDefault();
         let nom = document.getElementById("new-voiture-nom").value.trim();
@@ -461,19 +485,17 @@
             return;
         }
 
-        hangar[nom] = {
-            pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)),
+        let nouvelleVoiture = {
+            pieces: cataloguePiecesStandard,
             historique: []
         };
 
-        sauvegarderDonnees();
-        voitureCourante = nom;
-        rafraichirSelecteur();
-        majAffichage();
-        document.getElementById("form-voiture").reset();
+        set(ref(db, `hangar/${nom}`), nouvelleVoiture).then(() => {
+            voitureCourante = nom;
+            document.getElementById("form-voiture").reset();
+        });
     });
 
-    // ACTION : ENREGISTRER UN ROULAGE
     document.getElementById("form-session").addEventListener("submit", function(e) {
         e.preventDefault();
         if (!voitureCourante) return;
@@ -487,22 +509,23 @@
         let dateParts = dateInput.split("-");
         let dateFr = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
 
-        hangar[voitureCourante].historique.unshift({
+        let historiqueMaj = hangar[voitureCourante].historique || [];
+        historiqueMaj.unshift({
             date: dateFr, evenement: event, circuit: circuit, duree: duree, notes: notes
         });
 
-        hangar[voitureCourante].pieces.forEach(piece => {
+        let piecesMaj = hangar[voitureCourante].pieces.map(piece => {
             piece.heuresActuelles += duree;
+            return piece;
         });
 
-        sauvegarderDonnees();
-        majAffichage();
-        document.getElementById("form-session").reset();
+        update(ref(db, `hangar/${voitureCourante}`), {
+            historique: historiqueMaj,
+            pieces: piecesMaj
+        }).then(() => {
+            document.getElementById("form-session").reset();
+        });
     });
-
-    // Démarrage initial
-    rafraichirSelecteur();
-    majAffichage();
 </script>
 
 </body>
