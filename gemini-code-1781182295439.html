@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fun Cup - Track & Maintenance Expert</title>
+    <style>
+        :root {
+            --primary: #e60000;
+            --dark: #121212;
+            --dark-card: #1e1e1e;
+            --light: #f5f6fa;
+            --border: #dddddd;
+            --success: #2ecc71;
+            --warning: #e67e22;
+            --danger: #e74c3c;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        header {
+            background-color: var(--dark);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 6px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        header h1 { margin: 0 0 5px 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
+        header p { margin: 0; color: #aaa; font-size: 14px; }
+
+        .selector-box {
+            background: #252525;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .selector-box label { color: #fff; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .selector-box select {
+            width: 220px;
+            padding: 8px;
+            margin-top: 5px;
+            font-weight: bold;
+            font-size: 15px;
+            background: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .grid-main {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-main { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+
+        .card h2 { 
+            margin: 0 0 20px 0; 
+            font-size: 18px; 
+            font-weight: 700;
+            border-bottom: 2px solid var(--light);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        th { 
+            background-color: #fafafa; 
+            font-weight: 600; 
+            color: #666;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        tr:hover td { background-color: #f9f9f9; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #444; }
+        input, select, textarea {
+            width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; font-size: 14px;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; }
+
+        /* Style spécifique pour les inputs calendriers dans le tableau */
+        .table-date-input {
+            width: 130px;
+            padding: 5px;
+            font-size: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 5px;
+            display: inline-block;
+        }
+
+        button {
+            background-color: var(--primary); color: white; border: none; padding: 12px 20px;
+            border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.2s;
+            width: 100%; text-transform: uppercase;
+        }
+        button:hover { background-color: #cc0000; }
+        button.secondary { background-color: #444; }
+        button.secondary:hover { background-color: #222; }
+        
+        button.btn-reset {
+            background-color: #555; padding: 6px 12px; font-size: 11px; width: auto; border-radius: 3px;
+            display: inline-block; text-transform: none;
+        }
+        button.btn-reset:hover { background-color: var(--success); }
+
+        .status {
+            padding: 4px 8px; border-radius: 4px; color: white; font-weight: bold; display: inline-block; font-size: 11px; text-transform: uppercase;
+            text-align: center; width: 85px;
+        }
+        .status-ok { background-color: var(--success); }
+        .status-warn { background-color: var(--warning); }
+        .status-danger { background-color: var(--danger); }
+
+        .badge-voiture {
+            background-color: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 14px; margin-left: auto;
+        }
+
+        .date-changement {
+            font-size: 11px;
+            color: #777;
+            display: block;
+            margin-top: 3px;
+            font-style: italic;
+        }
+
+        .action-cell {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>Fun Cup - Track & Maintenance Expert</h1>
+            <p>Gestion d'atelier, suivi horaire des composants et feuilles de stand</p>
+        </div>
+        <div class="selector-box">
+            <label for="select-voiture">🚗 Sélectionner la Voiture :</label><br>
+            <select id="select-voiture" onchange="changerVoitureCourante()"></select>
+        </div>
+    </header>
+
+    <div class="grid-main">
+        <div>
+            <div class="card">
+                <h2>➕ Nouvelle Voiture</h2>
+                <form id="form-voiture">
+                    <div class="form-group">
+                        <label for="new-voiture-nom">N° de Châssis / Nom :</label>
+                        <input type="text" id="new-voiture-nom" placeholder="ex: N° 420 (Biplace)" required>
+                    </div>
+                    <button type="submit" class="secondary">Initialiser au Catalogue</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>⏱️ Nouveau Roulage</h2>
+                <form id="form-session">
+                    <div class="form-group">
+                        <label for="date">Date du Roulage :</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="event">Événement :</label>
+                        <input type="text" id="event" placeholder="ex: 24H de Spa, Meeting Dijon..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="circuit">Circuit :</label>
+                        <input type="text" id="circuit" placeholder="ex: Spa-Francorchamps" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="duree">Temps de roulage (heures) :</label>
+                        <input type="number" id="duree" step="0.01" min="0.01" placeholder="ex: 4.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">Notes Techniques du Mécano :</label>
+                        <textarea id="notes" rows="3" placeholder="Comportement mécanique, interventions au stand..."></textarea>
+                    </div>
+                    <button type="submit">Enregistrer le roulage</button>
+                </form>
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <h2 style="margin: 0; border: none; padding: 0;">🔧 Plan de Maintenance Préventive</h2>
+                    <span class="badge-voiture" id="titre-voiture-alertes">-</span>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table id="table-alertes">
+                        <thead>
+                            <tr>
+                                <th>Catégorie</th>
+                                <th>Composant / Pièce</th>
+                                <th>Heures Actuelles</th>
+                                <th>Potentiel Max</th>
+                                <th>Marge Restante</th>
+                                <th>Statut constructeur</th>
+                                <th>Choisir Date & Remplacer</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <h2 style="margin: 0; border: none; padding: 0;">📊 Tableau de Course & Sessions</h2>
+                    <span class="badge-voiture" id="titre-voiture-historique">-</span>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table id="table-course">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Événement</th>
+                                <th>Circuit</th>
+                                <th>Durée de roulage</th>
+                                <th>Notes d'Atelier</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. CATALOGUE OFFICIEL DES PIÈCES FUN CUP
+    const cataloguePiecesStandard = [
+        // MOTEUR & PÉRIPHÉRIQUES
+        { cat: "Moteur", nom: "Moteur VW Evo 3 (Révision Générale)", heuresActuelles: 0, limite: 60, dernierChangement: "" },
+        { cat: "Moteur", nom: "Courroie d'Alternateur", heuresActuelles: 0, limite: 20, dernierChangement: "" },
+        { cat: "Moteur", nom: "Pompe à Essence Principale", heuresActuelles: 0, limite: 60, dernierChangement: "" },
+        { cat: "Moteur", nom: "Faisceau d'Allumage & Bougies", heuresActuelles: 0, limite: 40, dernierChangement: "" },
+        
+        // TRANSMISSION
+        { cat: "Transmission", nom: "Boîte de Vitesses Sadev (Révision)", heuresActuelles: 0, limite: 30, dernierChangement: "" },
+        { cat: "Transmission", nom: "Cardans AR gauche/droite (Paire)", heuresActuelles: 0, limite: 15, dernierChangement: "" },
+        { cat: "Transmission", nom: "Kit Embrayage & Butée", heuresActuelles: 0, limite: 30, dernierChangement: "" },
+        { cat: "Transmission", nom: "Lobro / Soufflets de cardan", heuresActuelles: 0, limite: 15, dernierChangement: "" },
+
+        // FREINAGE
+        { cat: "Freinage", nom: "Disques de Frein AV", heuresActuelles: 0, limite: 12, dernierChangement: "" },
+        { cat: "Freinage", nom: "Disques de Frein AR", heuresActuelles: 0, limite: 24, dernierChangement: "" },
+        { cat: "Freinage", nom: "Plaquettes de Frein AV", heuresActuelles: 0, limite: 8, dernierChangement: "" },
+        { cat: "Freinage", nom: "Plaquettes de Frein AR", heuresActuelles: 0, limite: 16, dernierChangement: "" },
+        { cat: "Freinage", nom: "Maître-Cylindre de Frein", heuresActuelles: 0, limite: 60, dernierChangement: "" },
+
+        // LIAISON AU SOL / DIRECTION
+        { cat: "Train Roulant", nom: "Amortisseurs (Paire AV / AR)", heuresActuelles: 0, limite: 30, dernierChangement: "" },
+        { cat: "Train Roulant", nom: "Roulements de Roue (Les 4)", heuresActuelles: 0, limite: 30, dernierChangement: "" },
+        { cat: "Train Roulant", nom: "Moyeux de Roue AV/AR", heuresActuelles: 0, limite: 60, dernierChangement: "" },
+        { cat: "Train Roulant", nom: "Rotules de direction & Triangles", heuresActuelles: 0, limite: 40, dernierChangement: "" },
+        { cat: "Train Roulant", nom: "Crémaillère de Direction", heuresActuelles: 0, limite: 60, dernierChangement: "" }
+    ];
+
+    let hangar = {};
+
+    // Chargement des données locales ou initialisation d'une base vierge
+    if (localStorage.getItem("hangarFunCupV4")) {
+        hangar = JSON.parse(localStorage.getItem("hangarFunCupV4"));
+    } else {
+        hangar = {
+            "Voiture Châssis de démo": {
+                pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)),
+                historique: []
+            }
+        };
+        sauvegarderDonnees();
+    }
+
+    let voitureCourante = Object.keys(hangar)[0] || "";
+
+    // Mettre la date du jour au format HTML (AAAA-MM-JJ)
+    function obtenirDateDuJour() {
+        return new Date().toISOString().split('T')[0];
+    }
+
+    function sauvegarderDonnees() {
+        localStorage.setItem("hangarFunCupV4", JSON.stringify(hangar));
+    }
+
+    function rafraichirSelecteur() {
+        const select = document.getElementById("select-voiture");
+        select.innerHTML = "";
+        Object.keys(hangar).forEach(nomVoiture => {
+            let option = document.createElement("option");
+            option.value = nomVoiture;
+            option.textContent = nomVoiture;
+            if (nomVoiture === voitureCourante) option.selected = true;
+            select.appendChild(option);
+        });
+    }
+
+    function changerVoitureCourante() {
+        voitureCourante = document.getElementById("select-voiture").value;
+        majAffichage();
+    }
+
+    // REMISE À ZÉRO D'UNE PIÈCE VIA SON CALENDRIER EN LIGNE
+    function remplacerPieceFormulaire(indexPiece) {
+        if (!voitureCourante) return;
+        
+        let dateInputEl = document.getElementById(`date-change-${indexPiece}`);
+        let dateSaisie = dateInputEl.value;
+        
+        if (!dateSaisie) {
+            alert("Veuillez sélectionner une date valide dans le calendrier avant de valider.");
+            return;
+        }
+
+        let piece = hangar[voitureCourante].pieces[indexPiece];
+        
+        // Conversion de la date au format FR (JJ/MM/AAAA)
+        let parts = dateSaisie.split("-");
+        let dateFr = `${parts[2]}/${parts[1]}/${parts[0]}`;
+
+        if (confirm(`Confirmez-vous le changement de la pièce "${piece.nom}" en date du ${dateFr} ?`)) {
+            piece.heuresActuelles = 0;
+            piece.dernierChangement = dateFr;
+            
+            sauvegarderDonnees();
+            majAffichage();
+        }
+    }
+
+    function majAffichage() {
+        if (!voitureCourante) return;
+
+        document.getElementById("titre-voiture-alertes").textContent = voitureCourante;
+        document.getElementById("titre-voiture-historique").textContent = voitureCourante;
+
+        let donneesVoiture = hangar[voitureCourante];
+        let dateAujourdhui = obtenirDateDuJour();
+
+        // 1. Remplissage du tableau des pièces
+        const tbodyPieces = document.querySelector("#table-alertes tbody");
+        tbodyPieces.innerHTML = "";
+        
+        donneesVoiture.pieces.forEach((piece, index) => {
+            let reste = piece.limite - piece.heuresActuelles;
+            let statutClass = "status-ok";
+            let statutTexte = "OK";
+
+            if (reste <= 0) {
+                statutClass = "status-danger";
+                statutTexte = "Changement";
+            } else if (reste <= 4) {
+                statutClass = "status-warn";
+                statutTexte = "À Prévoir";
+            }
+
+            let infoDate = piece.dernierChangement ? `Monté le : ${piece.dernierChangement}` : "Aucun historique date";
+
+            let tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td style="color: #666; font-size:12px;"><strong>${piece.cat}</strong></td>
+                <td>
+                    <strong>${piece.nom}</strong>
+                    <span class="date-changement">${infoDate}</span>
+                </td>
+                <td>${piece.heuresActuelles.toFixed(2)} h</td>
+                <td>${piece.limite} h</td>
+                <td style="color: ${reste <= 4 ? 'var(--danger)' : 'inherit'}; font-weight: ${reste <= 4 ? 'bold' : 'normal'}">
+                    ${reste.toFixed(2)} h
+                </td>
+                <td><span class="status ${statutClass}">${statutTexte}</span></td>
+                <td>
+                    <div class="action-cell">
+                        <input type="date" id="date-change-${index}" class="table-date-input" value="${dateAujourdhui}">
+                        <button class="btn-reset" onclick="remplacerPieceFormulaire(${index})">🛠️ Remplacer</button>
+                    </div>
+                </td>
+            `;
+            tbodyPieces.appendChild(tr);
+        });
+
+        // 2. Remplissage du tableau de course (Historique)
+        const tbodyCourse = document.querySelector("#table-course tbody");
+        tbodyCourse.innerHTML = "";
+        
+        if (donneesVoiture.historique.length === 0) {
+            tbodyCourse.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999; font-style:italic;">Aucune session de course enregistrée. Saisissez un roulage à gauche.</td></tr>`;
+        } else {
+            donneesVoiture.historique.forEach(session => {
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${session.date}</strong></td>
+                    <td>${session.evenement}</td>
+                    <td>${session.circuit}</td>
+                    <td><strong style="color:var(--primary);">${session.duree.toFixed(2)} h</strong></td>
+                    <td><small>${session.notes ? session.notes : '<i>Aucune note</i>'}</small></td>
+                `;
+                tbodyCourse.appendChild(tr);
+            });
+        }
+    }
+
+    // ACTION : CREATION NOUVELLE VOITURE
+    document.getElementById("form-voiture").addEventListener("submit", function(e) {
+        e.preventDefault();
+        let nom = document.getElementById("new-voiture-nom").value.trim();
+
+        if (hangar[nom]) {
+            alert("Cette voiture est déjà enregistrée !");
+            return;
+        }
+
+        hangar[nom] = {
+            pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)),
+            historique: []
+        };
+
+        sauvegarderDonnees();
+        voitureCourante = nom;
+        rafraichirSelecteur();
+        majAffichage();
+        document.getElementById("form-voiture").reset();
+    });
+
+    // ACTION : ENREGISTRER UN ROULAGE
+    document.getElementById("form-session").addEventListener("submit", function(e) {
+        e.preventDefault();
+        if (!voitureCourante) return;
+
+        let dateInput = document.getElementById("date").value;
+        let event = document.getElementById("event").value;
+        let circuit = document.getElementById("circuit").value;
+        let duree = parseFloat(document.getElementById("duree").value);
+        let notes = document.getElementById("notes").value;
+
+        let dateParts = dateInput.split("-");
+        let dateFr = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+
+        hangar[voitureCourante].historique.unshift({
+            date: dateFr, evenement: event, circuit: circuit, duree: duree, notes: notes
+        });
+
+        hangar[voitureCourante].pieces.forEach(piece => {
+            piece.heuresActuelles += duree;
+        });
+
+        sauvegarderDonnees();
+        majAffichage();
+        document.getElementById("form-session").reset();
+    });
+
+    // Démarrage initial
+    rafraichirSelecteur();
+    majAffichage();
+</script>
+
+</body>
+</html>
