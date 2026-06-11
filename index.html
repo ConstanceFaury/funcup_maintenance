@@ -14,6 +14,11 @@
             --success: #2ecc71;
             --warning: #e67e22;
             --danger: #e74c3c;
+            --moteur-color: #2980b9;
+            --trans-color: #8e44ad;
+            --frein-color: #c0392b;
+            --train-av-color: #16a085;
+            --train-ar-color: #d35400;
         }
 
         body {
@@ -93,16 +98,34 @@
             gap: 10px;
         }
 
+        .category-header {
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 25px 0 10px 0;
+            padding: 8px 12px;
+            color: white;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .cat-moteur { background-color: var(--moteur-color); }
+        .cat-transmission { background-color: var(--trans-color); }
+        .cat-freinage { background-color: var(--frein-color); }
+        .cat-train-avant { background-color: var(--train-av-color); }
+        .cat-train-arriere { background-color: var(--train-ar-color); }
+
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 15px;
         }
 
         th, td {
-            padding: 12px 15px;
+            padding: 10px 12px;
             text-align: left;
             border-bottom: 1px solid #eee;
-            font-size: 14px;
+            font-size: 13px;
             vertical-align: middle;
         }
 
@@ -111,7 +134,7 @@
             font-weight: 600; 
             color: #666;
             text-transform: uppercase;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         tr:hover td { background-color: #f9f9f9; }
@@ -124,9 +147,9 @@
         input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; }
 
         .table-date-input {
-            width: 130px;
-            padding: 5px;
-            font-size: 12px;
+            width: 120px;
+            padding: 4px;
+            font-size: 11px;
             border: 1px solid #ccc;
             border-radius: 4px;
             margin-right: 5px;
@@ -143,14 +166,14 @@
         button.secondary:hover { background-color: #222; }
         
         button.btn-reset {
-            background-color: #555; padding: 6px 12px; font-size: 11px; width: auto; border-radius: 3px;
+            background-color: #555; padding: 5px 10px; font-size: 11px; width: auto; border-radius: 3px;
             display: inline-block; text-transform: none;
         }
         button.btn-reset:hover { background-color: var(--success); }
 
         .status {
-            padding: 4px 8px; border-radius: 4px; color: white; font-weight: bold; display: inline-block; font-size: 11px; text-transform: uppercase;
-            text-align: center; width: 85px;
+            padding: 3px 6px; border-radius: 4px; color: white; font-weight: bold; display: inline-block; font-size: 10px; text-transform: uppercase;
+            text-align: center; width: 80px;
         }
         .status-ok { background-color: var(--success); }
         .status-warn { background-color: var(--warning); }
@@ -164,7 +187,7 @@
             font-size: 11px;
             color: #777;
             display: block;
-            margin-top: 3px;
+            margin-top: 2px;
             font-style: italic;
         }
 
@@ -190,7 +213,7 @@
     <header>
         <div>
             <h1>Fun Cup - Live Track & Maintenance</h1>
-            <p>Base de données centralisée en temps réel pour l'équipe des mécaniciens <span id="loading-sync">🔄 Synchronisé</span></p>
+            <p>Gestion d'Atelier par Catégories de Pièces <span id="loading-sync">🔄 Synchronisé</span></p>
         </div>
         <div class="selector-box">
             <label for="select-voiture">🚗 Sélectionner la Voiture :</label><br>
@@ -205,7 +228,7 @@
                 <form id="form-voiture">
                     <div class="form-group">
                         <label for="new-voiture-nom">N° de Châssis / Nom :</label>
-                        <input type="text" id="new-voiture-nom" placeholder="ex: N° 420 (Biplace)" required>
+                        <input type="text" id="new-voiture-nom" placeholder="ex: Châssis #420" required>
                     </div>
                     <button type="submit" class="secondary">Initialiser au Catalogue</button>
                 </form>
@@ -220,7 +243,7 @@
                     </div>
                     <div class="form-group">
                         <label for="event">Événement :</label>
-                        <input type="text" id="event" placeholder="ex: 24H de Spa, Meeting Dijon..." required>
+                        <input type="text" id="event" placeholder="ex: 24H de Spa" required>
                     </div>
                     <div class="form-group">
                         <label for="circuit">Circuit :</label>
@@ -228,11 +251,11 @@
                     </div>
                     <div class="form-group">
                         <label for="duree">Temps de roulage (heures) :</label>
-                        <input type="number" id="duree" step="0.01" min="0.01" placeholder="ex: 4.5" required>
+                        <input type="number" id="duree" step="0.01" min="0.01" placeholder="ex: 7.0" required>
                     </div>
                     <div class="form-group">
                         <label for="notes">Notes Techniques du Mécano :</label>
-                        <textarea id="notes" rows="3" placeholder="Comportement mécanique, interventions au stand..."></textarea>
+                        <textarea id="notes" rows="3" placeholder="RAS, vérification pressions..."></textarea>
                     </div>
                     <button type="submit">Enregistrer le roulage</button>
                 </form>
@@ -242,25 +265,12 @@
         <div>
             <div class="card">
                 <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                    <h2 style="margin: 0; border: none; padding: 0;">🔧 Plan de Maintenance Préventive</h2>
+                    <h2 style="margin: 0; border: none; padding: 0;">🔧 Plan de Maintenance Catégorisé</h2>
                     <span class="badge-voiture" id="titre-voiture-alertes">-</span>
                 </div>
-                <div style="overflow-x: auto;">
-                    <table id="table-alertes">
-                        <thead>
-                            <tr>
-                                <th>Catégorie</th>
-                                <th>Composant / Pièce</th>
-                                <th>Heures Actuelles</th>
-                                <th>Potentiel Max</th>
-                                <th>Marge Restante</th>
-                                <th>Statut constructeur</th>
-                                <th>Choisir Date & Remplacer</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+                
+                <div id="maintenance-tables-container">
+                    </div>
             </div>
 
             <div class="card">
@@ -291,7 +301,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // VOS CODES OFFICIELS INJECTÉS :
     const firebaseConfig = {
         apiKey: "AIzaSyD1Ea_dUlVMyyJhxdyxyoZrR5EIBnvb_iQ",
         authDomain: "funcup-maintenance.firebaseapp.com",
@@ -302,7 +311,6 @@
         appId: "1:1046060984934:web:00c0c99451268a4cb99ba7"
     };
 
-    // Initialisation
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
@@ -361,6 +369,16 @@
         { cat: "Frein", nom: "Coupelles d'étriers", heuresActuelles: 0, limite: 200, dernierChangement: "" }
     ];
 
+    // On unifie la gestion de "Frein" et "Freinage" sous un seul libellé propre
+    const categoriesMapping = {
+        "Moteur": { titre: "Moteur", class: "cat-moteur" },
+        "Transmission": { titre: "Transmission", class: "cat-transmission" },
+        "Freinage": { titre: "Freinage & Circuits Hydrauliques", class: "cat-freinage" },
+        "Frein": { titre: "Freinage & Circuits Hydrauliques", class: "cat-freinage" }, // Redirection automatique
+        "Train avant": { titre: "Train Avant", class: "cat-train-avant" },
+        "Train arrière": { titre: "Train Arrière", class: "cat-train-arriere" }
+    };
+
     let hangar = {};
     let voitureCourante = "";
 
@@ -378,6 +396,23 @@
 
         if (data) {
             hangar = data;
+            
+            // SÉCURITÉ ANTI-PIÈCES MANQUANTES : Vérification et mise à jour automatique des structures
+            Object.keys(hangar).forEach(nomVoiture => {
+                if (!hangar[nomVoiture].pieces || hangar[nomVoiture].pieces.length < cataloguePiecesStandard.length) {
+                    console.log(`Mise à niveau automatique des 52 pièces pour ${nomVoiture}...`);
+                    let piecesExistantes = hangar[nomVoiture].pieces || [];
+                    
+                    let piecesCompletes = cataloguePiecesStandard.map(pieceStandard => {
+                        let trouvee = piecesExistantes.find(p => p.nom === pieceStandard.nom);
+                        return trouvee ? trouvee : JSON.parse(JSON.stringify(pieceStandard));
+                    });
+                    
+                    hangar[nomVoiture].pieces = piecesCompletes;
+                    update(ref(db, `hangar/${nomVoiture}`), { pieces: piecesCompletes });
+                }
+            });
+
             if (!voitureCourante || !hangar[voitureCourante]) {
                 voitureCourante = Object.keys(hangar)[0];
             }
@@ -445,49 +480,98 @@
         let donneesVoiture = hangar[voitureCourante];
         let dateAujourdhui = obtenirDateDuJour();
 
-        const tbodyPieces = document.querySelector("#table-alertes tbody");
-        tbodyPieces.innerHTML = "";
-        
-        if(donneesVoiture.pieces) {
-            donneesVoiture.pieces.forEach((piece, index) => {
-                let reste = piece.limite - piece.heuresActuelles;
-                let statutClass = "status-ok";
-                let statutTexte = "OK";
+        const container = document.getElementById("maintenance-tables-container");
+        container.innerHTML = "";
 
-                if (reste <= 0) {
-                    statutClass = "status-danger";
-                    statutTexte = "Changement";
-                } else if (reste <= 4) {
-                    statutClass = "status-warn";
-                    statutTexte = "À Prévoir";
-                }
+        // Définition de l'ordre d'affichage désiré pour les catégories regroupées
+        const groupesAxe = [
+            { id: "Moteur", titre: "⚙️ Catégorie : Moteur", class: "cat-moteur", cles: ["Moteur"] },
+            { id: "Transmission", titre: "⛓️ Catégorie : Transmission", class: "cat-transmission", cles: ["Transmission"] },
+            { id: "Freinage", titre: "🛑 Catégorie : Freinage & Hydraulique", class: "cat-freinage", cles: ["Freinage", "Frein"] },
+            { id: "Train avant", titre: "🚘 Catégorie : Train Avant", class: "cat-train-avant", cles: ["Train avant"] },
+            { id: "Train arrière", titre: "🏎️ Catégorie : Train Arrière", class: "cat-train-arriere", cles: ["Train arrière"] }
+        ];
 
-                let infoDate = piece.dernierChangement ? `Monté le : ${piece.dernierChangement}` : "Aucun historique date";
+        // Créer les 5 sections distinctes
+        groupesAxe.forEach(groupe => {
+            let divGroupe = document.createElement("div");
+            divGroupe.className = `category-header ${groupe.class}`;
+            divGroupe.innerHTML = `<span>${groupe.titre}</span>`;
+            
+            let divTableWrapper = document.createElement("div");
+            divTableWrapper.style.overflowX = "auto";
+            
+            let table = document.createElement("table");
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Composant / Pièce</th>
+                        <th style="width: 15%;">Heures Actuelles</th>
+                        <th style="width: 12%;">Potentiel</th>
+                        <th style="width: 13%;">Marge Restante</th>
+                        <th style="width: 10%;">Statut</th>
+                        <th style="width: 15%;">Action Atelier</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            `;
+            
+            let tbody = table.querySelector("tbody");
+            let aDesPieces = false;
 
-                let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td style="color: #666; font-size:12px;"><strong>${piece.cat}</strong></td>
-                    <td>
-                        <strong>${piece.nom}</strong>
-                        <span class="date-changement">${infoDate}</span>
-                    </td>
-                    <td>${piece.heuresActuelles.toFixed(2)} h</td>
-                    <td>${piece.limite} h</td>
-                    <td style="color: ${reste <= 4 ? 'var(--danger)' : 'inherit'}; font-weight: ${reste <= 4 ? 'bold' : 'normal'}">
-                        ${reste.toFixed(2)} h
-                    </td>
-                    <td><span class="status ${statutClass}">${statutTexte}</span></td>
-                    <td>
-                        <div class="action-cell">
-                            <input type="date" id="date-change-${index}" class="table-date-input" value="${dateAujourdhui}">
-                            <button class="btn-reset" onclick="remplacerPieceFormulaire(${index})">🛠️ Remplacer</button>
-                        </div>
-                    </td>
-                `;
-                tbodyPieces.appendChild(tr);
-            });
-        }
+            if (donneesVoiture.pieces) {
+                donneesVoiture.pieces.forEach((piece, index) => {
+                    // On vérifie si la pièce appartient à l'une des clés du groupe
+                    if (groupe.cles.includes(piece.cat)) {
+                        aDesPieces = true;
+                        let reste = piece.limite - piece.heuresActuelles;
+                        let statutClass = "status-ok";
+                        let statutTexte = "OK";
 
+                        if (reste <= 0) {
+                            statutClass = "status-danger";
+                            statutTexte = "Remplacer";
+                        } else if (reste <= 4) {
+                            statutClass = "status-warn";
+                            statutTexte = "À Prévoir";
+                        }
+
+                        let infoDate = piece.dernierChangement ? `Monté le : ${piece.dernierChangement}` : "Aucun historique date";
+
+                        let tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td>
+                                <strong>${piece.nom}</strong>
+                                <span class="date-changement">${infoDate}</span>
+                            </td>
+                            <td>${piece.heuresActuelles.toFixed(2)} h</td>
+                            <td>${piece.limite} h</td>
+                            <td style="color: ${reste <= 4 ? 'var(--danger)' : 'inherit'}; font-weight: ${reste <= 4 ? 'bold' : 'normal'}">
+                                ${reste.toFixed(2)} h
+                            </td>
+                            <td><span class="status ${statutClass}">${statutTexte}</span></td>
+                            <td>
+                                <div class="action-cell">
+                                    <input type="date" id="date-change-${index}" class="table-date-input" value="${dateAujourdhui}">
+                                    <button class="btn-reset" onclick="remplacerPieceFormulaire(${index})">🛠️ Remplacer</button>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    }
+                });
+            }
+
+            if (!aDesPieces) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#999; font-style:italic;">Aucune pièce configurée.</td></tr>`;
+            }
+
+            divTableWrapper.appendChild(table);
+            container.appendChild(divGroupe);
+            container.appendChild(divTableWrapper);
+        });
+
+        // Mise à jour de l'historique global des roulages de la voiture
         const tbodyCourse = document.querySelector("#table-course tbody");
         tbodyCourse.innerHTML = "";
         
@@ -518,7 +602,7 @@
         }
 
         let nouvelleVoiture = {
-            pieces: cataloguePiecesStandard,
+            pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)),
             historique: []
         };
 
