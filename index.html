@@ -111,7 +111,7 @@
         }
         .cat-moteur { background-color: var(--moteur-color); }
         .cat-transmission { background-color: var(--trans-color); }
-        .cat-freinage { background-color: var(--frein-color); }
+        .cat-freins { background-color: var(--frein-color); }
         .cat-train-avant { background-color: var(--train-av-color); }
         .cat-train-arriere { background-color: var(--train-ar-color); }
 
@@ -364,16 +364,6 @@
         { cat: "Frein", nom: "Coupelles d'étriers", heuresActuelles: 0, limite: 200, dernierChangement: "" }
     ];
 
-    // On unifie la gestion de "Frein" et "Freinage" sous un seul libellé propre
-    const categoriesMapping = {
-        "Moteur": { titre: "Moteur", class: "cat-moteur" },
-        "Transmission": { titre: "Transmission", class: "cat-transmission" },
-        "Freinage": { titre: "Freinage & Circuits Hydrauliques", class: "cat-freinage" },
-        "Frein": { titre: "Freinage & Circuits Hydrauliques", class: "cat-freinage" }, // Redirection automatique
-        "Train avant": { titre: "Train Avant", class: "cat-train-avant" },
-        "Train arrière": { titre: "Train Arrière", class: "cat-train-arriere" }
-    };
-
     let hangar = {};
     let voitureCourante = "";
 
@@ -392,17 +382,14 @@
         if (data) {
             hangar = data;
             
-            // SÉCURITÉ ANTI-PIÈCES MANQUANTES : Vérification et mise à jour automatique des structures
+            // Forcer l'application stricte du catalogue propre de 47 pièces
             Object.keys(hangar).forEach(nomVoiture => {
-                if (!hangar[nomVoiture].pieces || hangar[nomVoiture].pieces.length < cataloguePiecesStandard.length) {
-                    console.log(`Mise à niveau automatique des 52 pièces pour ${nomVoiture}...`);
+                if (!hangar[nomVoiture].pieces || hangar[nomVoiture].pieces.length !== cataloguePiecesStandard.length) {
                     let piecesExistantes = hangar[nomVoiture].pieces || [];
-                    
                     let piecesCompletes = cataloguePiecesStandard.map(pieceStandard => {
                         let trouvee = piecesExistantes.find(p => p.nom === pieceStandard.nom);
                         return trouvee ? trouvee : JSON.parse(JSON.stringify(pieceStandard));
                     });
-                    
                     hangar[nomVoiture].pieces = piecesCompletes;
                     update(ref(db, `hangar/${nomVoiture}`), { pieces: piecesCompletes });
                 }
@@ -478,16 +465,14 @@
         const container = document.getElementById("maintenance-tables-container");
         container.innerHTML = "";
 
-        // Définition de l'ordre d'affichage désiré pour les catégories regroupées
         const groupesAxe = [
             { id: "Moteur", titre: "⚙️ Catégorie : Moteur", class: "cat-moteur", cles: ["Moteur"] },
             { id: "Transmission", titre: "⛓️ Catégorie : Transmission", class: "cat-transmission", cles: ["Transmission"] },
-            { id: "Freinage", titre: "🛑 Catégorie : Freinage & Hydraulique", class: "cat-freinage", cles: ["Freinage", "Frein"] },
+            { id: "Freins", titre: "🛑 Catégorie : Freins", class: "cat-freins", cles: ["Frein", "Freinage"] },
             { id: "Train avant", titre: "🚘 Catégorie : Train Avant", class: "cat-train-avant", cles: ["Train avant"] },
             { id: "Train arrière", titre: "🏎️ Catégorie : Train Arrière", class: "cat-train-arriere", cles: ["Train arrière"] }
         ];
 
-        // Créer les 5 sections distinctes
         groupesAxe.forEach(groupe => {
             let divGroupe = document.createElement("div");
             divGroupe.className = `category-header ${groupe.class}`;
@@ -516,7 +501,6 @@
 
             if (donneesVoiture.pieces) {
                 donneesVoiture.pieces.forEach((piece, index) => {
-                    // On vérifie si la pièce appartient à l'une des clés du groupe
                     if (groupe.cles.includes(piece.cat)) {
                         aDesPieces = true;
                         let reste = piece.limite - piece.heuresActuelles;
@@ -525,7 +509,7 @@
 
                         if (reste <= 0) {
                             statutClass = "status-danger";
-                            statutTexte = "Remplacer";
+                            statutTexte = "Changement";
                         } else if (reste <= 4) {
                             statutClass = "status-warn";
                             statutTexte = "À Prévoir";
@@ -557,16 +541,14 @@
                 });
             }
 
-            if (!aDesPieces) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#999; font-style:italic;">Aucune pièce configurée.</td></tr>`;
+            if (aDesPieces) {
+                divTableWrapper.appendChild(table);
+                container.appendChild(divGroupe);
+                container.appendChild(divTableWrapper);
             }
-
-            divTableWrapper.appendChild(table);
-            container.appendChild(divGroupe);
-            container.appendChild(divTableWrapper);
         });
 
-        // Mise à jour de l'historique global des roulages de la voiture
+        // Tableau de course
         const tbodyCourse = document.querySelector("#table-course tbody");
         tbodyCourse.innerHTML = "";
         
