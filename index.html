@@ -54,6 +54,7 @@
             padding: 12px 20px;
             border-radius: 8px;
             border: 1px solid #333;
+            text-align: right;
         }
 
         .selector-box label { color: #fff; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -61,6 +62,7 @@
             width: 220px;
             padding: 8px;
             margin-top: 5px;
+            margin-bottom: 8px;
             font-weight: bold;
             font-size: 15px;
             background: white;
@@ -167,9 +169,27 @@
         
         button.btn-reset {
             background-color: #555; padding: 5px 10px; font-size: 11px; width: auto; border-radius: 3px;
-            display: inline-block; text-transform: none;
+            display: inline-block; text-transform: none; margin-right: 2px;
         }
         button.btn-reset:hover { background-color: var(--success); }
+        
+        button.btn-cancel-date {
+            background-color: #7f8c8d; padding: 5px 8px; font-size: 11px; width: auto; border-radius: 3px;
+            display: inline-block; text-transform: none;
+        }
+        button.btn-cancel-date:hover { background-color: #c0392b; }
+
+        button.btn-delete-row {
+            background-color: #e74c3c; padding: 4px 8px; font-size: 11px; width: auto; border-radius: 4px;
+            text-transform: none; font-weight: normal;
+        }
+        button.btn-delete-row:hover { background-color: #c0392b; }
+
+        button.btn-delete-car {
+            background-color: #c0392b; padding: 5px 10px; font-size: 11px; width: 100%; border-radius: 4px;
+            text-transform: uppercase; font-weight: bold; margin-top: 5px;
+        }
+        button.btn-delete-car:hover { background-color: #962d22; }
 
         .status {
             padding: 3px 6px; border-radius: 4px; color: white; font-weight: bold; display: inline-block; font-size: 10px; text-transform: uppercase;
@@ -218,6 +238,7 @@
         <div class="selector-box">
             <label for="select-voiture">🚗 Sélectionner la Voiture :</label><br>
             <select id="select-voiture" onchange="changerVoitureCourante()"></select>
+            <button class="btn-delete-car" onclick="supprimerVoitureCourante()">🗑️ Supprimer cette voiture</button>
         </div>
     </header>
 
@@ -287,6 +308,7 @@
                                 <th>Circuit</th>
                                 <th>Durée de roulage</th>
                                 <th>Notes d'Atelier</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -299,7 +321,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyD1Ea_dUlVMyyJhxdyxyoZrR5EIBnvb_iQ",
@@ -382,16 +404,17 @@
         if (data) {
             hangar = data;
             
-            // Forcer l'application stricte du catalogue propre de 47 pièces
+            // Recalibrage forcé
             Object.keys(hangar).forEach(nomVoiture => {
-                if (!hangar[nomVoiture].pieces || hangar[nomVoiture].pieces.length !== cataloguePiecesStandard.length) {
-                    let piecesExistantes = hangar[nomVoiture].pieces || [];
-                    let piecesCompletes = cataloguePiecesStandard.map(pieceStandard => {
-                        let trouvee = piecesExistantes.find(p => p.nom === pieceStandard.nom);
-                        return trouvee ? trouvee : JSON.parse(JSON.stringify(pieceStandard));
+                let piecesEnBase = hangar[nomVoiture].pieces || [];
+                let aAnciennesPieces = piecesEnBase.some(p => p.nom.includes("Disques de Frein") || p.nom.includes("Plaquettes"));
+                if (aAnciennesPieces || piecesEnBase.length !== cataloguePiecesStandard.length) {
+                    let piecesNettoyees = cataloguePiecesStandard.map(pieceStandard => {
+                        let correspondance = piecesEnBase.find(p => p.nom === pieceStandard.nom);
+                        return correspondance ? correspondance : JSON.parse(JSON.stringify(pieceStandard));
                     });
-                    hangar[nomVoiture].pieces = piecesCompletes;
-                    update(ref(db, `hangar/${nomVoiture}`), { pieces: piecesCompletes });
+                    hangar[nomVoiture].pieces = piecesNettoyees;
+                    update(ref(db, `hangar/${nomVoiture}`), { pieces: piecesNettoyees });
                 }
             });
 
@@ -400,13 +423,13 @@
             }
         } else {
             hangar = {
-                "Châssis Exemple #000": {
+                "Voiture Châssis de démo": {
                     pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)),
                     historique: []
                 }
             };
             set(ref(db, 'hangar'), hangar);
-            voitureCourante = "Châssis Exemple #000";
+            voitureCourante = "Voiture Châssis de démo";
         }
         
         rafraichirSelecteur();
@@ -430,17 +453,24 @@
         majAffichage();
     }
 
+    // 🔴 FONCTION 1 : SUPPRIMER UNE VOITURE COMPLETE
+    window.supprimerVoitureCourante = function() {
+        if (!voitureCourante) return;
+        if (confirm(`⚠️ ATTENTION : Voulez-vous vraiment supprimer définitivement la voiture "${voitureCourante}" de la base de données ? Cette action effacera toutes ses pièces et ses courses.`)) {
+            let voitureASupprimer = voitureCourante;
+            voitureCourante = ""; // Reset sélection
+            remove(ref(db, `hangar/${voitureASupprimer}`)).then(() => {
+                alert(`La voiture ${voitureASupprimer} a bien été effacée.`);
+            });
+        }
+    }
+
+    // 🔄 FONCTION 2 : ENREGISTRER OU ANNULER LA DATE DE CHANGEMENT D'UNE PIECE
     window.remplacerPieceFormulaire = function(indexPiece) {
         if (!voitureCourante) return;
-        
         let dateInputEl = document.getElementById(`date-change-${indexPiece}`);
         let dateSaisie = dateInputEl.value;
-        
-        if (!dateSaisie) {
-            alert("Sélectionnez une date.");
-            return;
-        }
-
+        if (!dateSaisie) { alert("Sélectionnez une date."); return; }
         let piece = hangar[voitureCourante].pieces[indexPiece];
         let parts = dateSaisie.split("-");
         let dateFr = `${parts[2]}/${parts[1]}/${parts[0]}`;
@@ -453,8 +483,48 @@
         }
     }
 
+    window.annulerDateChangement = function(indexPiece) {
+        if (!voitureCourante) return;
+        let piece = hangar[voitureCourante].pieces[indexPiece];
+        if (confirm(`Voulez-vous effacer l'historique de date pour "${piece.nom}" ? Le compteur d'heures actuel ne sera pas modifié.`)) {
+            update(ref(db, `hangar/${voitureCourante}/pieces/${indexPiece}`), {
+                dernierChangement: ""
+            });
+        }
+    }
+
+    // 🗑️ FONCTION 3 : SUPPRIMER UNE COURSE ET SOUSTRAIRE LES HEURES AUTOMATIQUEMENT
+    window.supprimerCourse = function(indexCourse) {
+        if (!voitureCourante) return;
+        let course = hangar[voitureCourante].historique[indexCourse];
+        
+        if (confirm(`Voulez-vous supprimer la session "${course.evenement}" (${course.duree} h) ? L'application va automatiquement soustraire ces ${course.duree} h à TOUTES les pièces de cette voiture.`)) {
+            let heuresASoustraire = course.duree;
+            
+            // Faire le calcul inverse sur les pièces
+            let piecesMaj = hangar[voitureCourante].pieces.map(piece => {
+                piece.heuresActuelles = Math.max(0, piece.heuresActuelles - heuresASoustraire); // Pas de valeur négative
+                return piece;
+            });
+
+            // Retirer l'élément du tableau historique
+            let historiqueMaj = hangar[voitureCourante].historique;
+            historiqueMaj.splice(indexCourse, 1);
+
+            // Mettre à jour Firebase
+            update(ref(db, `hangar/${voitureCourante}`), {
+                historique: historiqueMaj,
+                pieces: piecesMaj
+            });
+        }
+    }
+
     function majAffichage() {
-        if (!voitureCourante || !hangar[voitureCourante]) return;
+        if (!voitureCourante || !hangar[voitureCourante]) {
+            document.getElementById("maintenance-tables-container").innerHTML = "<p style='text-align:center;color:#999;'>Aucune voiture sélectionnée.</p>";
+            document.querySelector("#table-course tbody").innerHTML = "";
+            return;
+        }
 
         document.getElementById("titre-voiture-alertes").textContent = voitureCourante;
         document.getElementById("titre-voiture-historique").textContent = voitureCourante;
@@ -532,7 +602,8 @@
                             <td>
                                 <div class="action-cell">
                                     <input type="date" id="date-change-${index}" class="table-date-input" value="${dateAujourdhui}">
-                                    <button class="btn-reset" onclick="remplacerPieceFormulaire(${index})">🛠️ Remplacer</button>
+                                    <button class="btn-reset" onclick="remplacerPieceFormulaire(${index})">🛠️</button>
+                                    <button class="btn-cancel-date" onclick="annulerDateChangement(${index})" title="Effacer la date uniquement">❌</button>
                                 </div>
                             </td>
                         `;
@@ -553,9 +624,9 @@
         tbodyCourse.innerHTML = "";
         
         if (!donneesVoiture.historique || donneesVoiture.historique.length === 0) {
-            tbodyCourse.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999; font-style:italic;">Aucune session de course enregistrée. Saisissez un roulage à gauche.</td></tr>`;
+            tbodyCourse.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#999; font-style:italic;">Aucune session de course enregistrée. Saisissez un roulage à gauche.</td></tr>`;
         } else {
-            donneesVoiture.historique.forEach(session => {
+            donneesVoiture.historique.forEach((session, index) => {
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td><strong>${session.date}</strong></td>
@@ -563,6 +634,7 @@
                     <td>${session.circuit}</td>
                     <td><strong style="color:var(--primary);">${session.duree.toFixed(2)} h</strong></td>
                     <td><small>${session.notes ? session.notes : '<i>Aucune note</i>'}</small></td>
+                    <td><button class="btn-delete-row" onclick="supprimerCourse(${index})">🗑️ Supprimer</button></td>
                 `;
                 tbodyCourse.appendChild(tr);
             });
@@ -572,27 +644,14 @@
     document.getElementById("form-voiture").addEventListener("submit", function(e) {
         e.preventDefault();
         let nom = document.getElementById("new-voiture-nom").value.trim();
-
-        if (hangar[nom]) {
-            alert("Cette voiture est déjà enregistrée !");
-            return;
-        }
-
-        let nouvelleVoiture = {
-            pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)),
-            historique: []
-        };
-
-        set(ref(db, `hangar/${nom}`), nouvelleVoiture).then(() => {
-            voitureCourante = nom;
-            document.getElementById("form-voiture").reset();
-        });
+        if (hangar[nom]) { alert("Cette voiture est déjà enregistrée !"); return; }
+        let nouvelleVoiture = { pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)), historique: [] };
+        set(ref(db, `hangar/${nom}`), nouvelleVoiture).then(() => { voitureCourante = nom; document.getElementById("form-voiture").reset(); });
     });
 
     document.getElementById("form-session").addEventListener("submit", function(e) {
         e.preventDefault();
         if (!voitureCourante) return;
-
         let dateInput = document.getElementById("date").value;
         let event = document.getElementById("event").value;
         let circuit = document.getElementById("circuit").value;
@@ -603,21 +662,11 @@
         let dateFr = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
 
         let historiqueMaj = hangar[voitureCourante].historique || [];
-        historiqueMaj.unshift({
-            date: dateFr, evenement: event, circuit: circuit, duree: duree, notes: notes
-        });
+        historiqueMaj.unshift({ date: dateFr, evenement: event, circuit: circuit, duree: duree, notes: notes });
 
-        let piecesMaj = hangar[voitureCourante].pieces.map(piece => {
-            piece.heuresActuelles += duree;
-            return piece;
-        });
+        let piecesMaj = hangar[voitureCourante].pieces.map(piece => { piece.heuresActuelles += duree; return piece; });
 
-        update(ref(db, `hangar/${voitureCourante}`), {
-            historique: historiqueMaj,
-            pieces: piecesMaj
-        }).then(() => {
-            document.getElementById("form-session").reset();
-        });
+        update(ref(db, `hangar/${voitureCourante}`), { historique: historiqueMaj, pieces: piecesMaj }).then(() => { document.getElementById("form-session").reset(); });
     });
 </script>
 
