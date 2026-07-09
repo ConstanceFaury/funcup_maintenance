@@ -502,23 +502,13 @@
 
     function obtenirDateDuJour() { return new Date().toISOString().split('T')[0]; }
 
-   // Écoute les changements dans le dossier 'hangar' pour mettre à jour les menus
-onValue(ref(db, 'hangar'), (snapshot) => {
-    const hangar = snapshot.val();
-    const selectVoiture = document.getElementById("select-voiture"); // ID de ton menu déroulant
-    
-    // Vide le menu avant de le reconstruire
-    selectVoiture.innerHTML = '<option value="">-- Choisir une voiture --</option>';
-
-    if (hangar) {
-        Object.keys(hangar).forEach(nomVoiture => {
-            const option = document.createElement("option");
-            option.value = nomVoiture;
-            option.textContent = nomVoiture;
-            selectVoiture.appendChild(option);
-        });
-    }
-});
+    onValue(ref(db, 'hangar'), (snapshot) => {
+        hangar = snapshot.val() || {};
+        if (!voitureCourante || !hangar[voitureCourante]) voitureCourante = Object.keys(hangar)[0] || "";
+        rafraichirSelecteur();
+        rafraichirCheckboxes();
+        majAffichage();
+    });
 
     function rafraichirSelecteur() {
         const select = document.getElementById("select-voiture");
