@@ -740,21 +740,22 @@ groupes.forEach(g => {
    import { get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"; // Importe 'get' et 'child'
     
     document.getElementById("form-voiture").addEventListener("submit", (e) => {
-            e.preventDefault();
-            const nomVoiture = document.getElementById("new-voiture-nom").value.trim();
-            
-            if (!nomVoiture) return;
+        e.preventDefault();
+        const nomVoiture = document.getElementById("new-voiture-nom").value.trim();
+        
+        if (!nomVoiture) return;
     
-            set(ref(db, `hangar/${nomVoiture}`), {
-                historique: [{ date: new Date().toISOString().split('T')[0], evenement: "Initialisation", circuit: "N/A", duree: 0, notes: "Création châssis" }],
-                pieces: {} 
-            }).then(() => {
-                alert("Châssis " + nomVoiture + " ajouté !");
-                document.getElementById("new-voiture-nom").value = "";
-            }).catch((error) => {
-                console.error("Erreur Firebase : ", error);
-            });
+        // On utilise cataloguePiecesStandard au lieu de {}
+        set(ref(db, `hangar/${nomVoiture}`), {
+            historique: [{ date: new Date().toISOString().split('T')[0], evenement: "Initialisation", circuit: "N/A", duree: 0, notes: "Création châssis" }],
+            pieces: cataloguePiecesStandard 
+        }).then(() => {
+            alert("Châssis " + nomVoiture + " créé avec ses pièces standards !");
+            document.getElementById("new-voiture-nom").value = "";
+        }).catch((error) => {
+            console.error("Erreur Firebase : ", error);
         });
+    });
         
     document.getElementById("form-session").addEventListener("submit", async (e) => {
         e.preventDefault();
