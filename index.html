@@ -717,37 +717,11 @@ groupes.forEach(g => {
 }
     
     
-   document.getElementById("form-session").addEventListener("submit", (e) => {
-    e.preventDefault();
-    
-    // 1. Récupération des données du formulaire
-    const date = document.getElementById("date").value;
-    const event = document.getElementById("event").value;
-    const circuit = document.getElementById("circuit").value;
-    const duree = document.getElementById("duree").value;
-    const notes = document.getElementById("notes").value;
-
-    if (!voitureCourante) {
-        alert("Erreur : Aucune voiture sélectionnée !");
-        return;
-    }
-
-    // 2. Création de l'objet session
-    const newSession = { date, evenement: event, circuit, duree, notes };
-
-    // 3. Récupération de l'historique existant ou création d'un nouveau
-    let hist = hangar[voitureCourante].historique ? [...hangar[voitureCourante].historique] : [];
-    hist.push(newSession);
-
-    // 4. Envoi vers Firebase
-    update(ref(db, `hangar/${voitureCourante}`), { historique: hist })
-        .then(() => {
-            alert("Roulage enregistré !");
-            // Réinitialise le formulaire
-            document.getElementById("form-session").reset();
-        })
-        .catch((error) => {
-            alert("Erreur Firebase : " + error.message);
-        });
-});
+    document.getElementById("form-voiture").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const nom = document.getElementById("new-voiture-nom").value;
+        const piecesObj = {};
+        cataloguePiecesStandard.forEach((p, i) => piecesObj["piece_" + i] = p);
+        set(ref(db, `hangar/${nom}`), { pieces: piecesObj, historique: [] });
+    });
 </script>
