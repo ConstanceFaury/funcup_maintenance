@@ -453,6 +453,7 @@
         hangar = snapshot.val() || {};
         if (!voitureCourante || !hangar[voitureCourante]) voitureCourante = Object.keys(hangar)[0] || "";
         rafraichirSelecteur();
+        rafraichirCheckboxes();
         majAffichage();
     });
 
