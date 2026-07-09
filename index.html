@@ -304,6 +304,11 @@
                         <label for="notes">Notes Techniques du Mécano :</label>
                         <textarea id="notes" rows="3" placeholder="RAS, vérification pressions..."></textarea>
                     </div>
+                    <div class="form-group">
+                        <label>Voitures présentes :</label>
+                        <div id="container-checkbox-voitures" style="background:#eee; padding:10px; border-radius:5px;">
+                            </div>
+                    </div>
                     <button type="submit">Enregistrer le roulage</button>
                 </form>
             </div>
@@ -420,47 +425,57 @@
     }
 
     const dbRef = ref(db, 'hangar');
-    onValue(dbRef, (snapshot) => {
-        const data = snapshot.val();
+onValue(dbRef, (snapshot) => {
+    const data = snapshot.val();
+    
+    // Feedback visuel de synchro
+    const syncBadge = document.getElementById("loading-sync");
+    syncBadge.style.display = "inline-block";
+    setTimeout(() => { syncBadge.style.display = "none"; }, 1500);
+
+    if (data) {
+        hangar = data;
         
-        const syncBadge = document.getElementById("loading-sync");
-        syncBadge.style.display = "inline-block";
-        setTimeout(() => { syncBadge.style.display = "none"; }, 1500);
-
-        if (data) {
-            hangar = data;
-            
-            // Recalibrage forcé
-            Object.keys(hangar).forEach(nomVoiture => {
-                let piecesEnBase = hangar[nomVoiture].pieces || [];
-                let aAnciennesPieces = piecesEnBase.some(p => p.nom.includes("Disques de Frein") || p.nom.includes("Plaquettes"));
-                if (aAnciennesPieces || piecesEnBase.length !== cataloguePiecesStandard.length) {
-                    let piecesNettoyees = cataloguePiecesStandard.map(pieceStandard => {
-                        let correspondance = piecesEnBase.find(p => p.nom === pieceStandard.nom);
-                        return correspondance ? correspondance : JSON.parse(JSON.stringify(pieceStandard));
-                    });
-                    hangar[nomVoiture].pieces = piecesNettoyees;
-                    update(ref(db, `hangar/${nomVoiture}`), { pieces: piecesNettoyees });
-                }
-            });
-
-            if (!voitureCourante || !hangar[voitureCourante]) {
-                voitureCourante = Object.keys(hangar)[0];
+        // --- Recalibrage forcé ---
+        Object.keys(hangar).forEach(nomVoiture => {
+            let piecesEnBase = hangar[nomVoiture].pieces || [];
+            // Si la structure des pièces a changé, on nettoie
+            if (piecesEnBase.length !== cataloguePiecesStandard.length) {
+                let piecesNettoyees = cataloguePiecesStandard.map(pieceStandard => {
+                    let correspondance = piecesEnBase.find(p => p.nom === pieceStandard.nom);
+                    return correspondance ? correspondance : JSON.parse(JSON.stringify(pieceStandard));
+                });
+                hangar[nomVoiture].pieces = piecesNettoyees;
+                update(ref(db, `hangar/${nomVoiture}`), { pieces: piecesNettoyees });
             }
-        } else {
-            hangar = {
-                "Voiture Châssis de démo": {
-                    pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)),
-                    historique: []
-                }
-            };
-            set(ref(db, 'hangar'), hangar);
-            voitureCourante = "Voiture Châssis de démo";
+        });
+
+        // Maintien de la voiture courante (si elle a été supprimée, on prend la première dispo)
+        if (!voitureCourante || !hangar[voitureCourante]) {
+            voitureCourante = Object.keys(hangar)[0] || "";
         }
-        
-        rafraichirSelecteur();
-        majAffichage();
-    });
+    } else {
+        // Initialisation si base vide
+        hangar = {
+            "Voiture Châssis de démo": {
+                pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)),
+                historique: []
+            }
+        };
+        set(ref(db, 'hangar'), hangar);
+        voitureCourante = "Voiture Châssis de démo";
+    }
+    
+    // Mise à jour de toute l'interface
+    rafraichirSelecteur();
+    
+    // Si tu as ajouté la fonction pour les checkboxes :
+    if (typeof rafraichirCheckboxes === 'function') {
+        rafraichirCheckboxes();
+    }
+    
+    majAffichage();
+});
 
     function rafraichirSelecteur() {
         const select = document.getElementById("select-voiture");
@@ -473,6 +488,18 @@
             select.appendChild(option);
         });
     }
+
+    function rafraichirCheckboxes() {
+    const container = document.getElementById("container-checkbox-voitures");
+    container.innerHTML = "";
+    Object.keys(hangar).forEach(nomVoiture => {
+        container.innerHTML += `
+            <label style="display:block; cursor:pointer; font-size:12px;">
+                <input type="checkbox" class="check-voiture" value="${nomVoiture}"> ${nomVoiture}
+            </label>
+        `;
+    });
+}
 
     window.changerVoitureCourante = function() {
         voitureCourante = document.getElementById("select-voiture").value;
@@ -680,26 +707,34 @@ function majAffichage() {
     }
 }
 
-    document.getElementById("form-session").addEventListener("submit", function(e) {
-        e.preventDefault();
-        let dateParts = document.getElementById("date").value.split("-");
-        let dateFr = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-        
-        let nouvelleSession = {
-            date: dateFr,
-            evenement: document.getElementById("event").value,
-            circuit: document.getElementById("circuit").value,
-            duree: parseFloat(document.getElementById("duree").value),
-            notes: document.getElementById("notes").value
-        };
+document.getElementById("form-session").addEventListener("submit", function(e) {
+    e.preventDefault();
+    let dateParts = document.getElementById("date").value.split("-");
+    let dateFr = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+    
+    let nouvelleSession = {
+        date: dateFr,
+        evenement: document.getElementById("event").value,
+        circuit: document.getElementById("circuit").value,
+        duree: parseFloat(document.getElementById("duree").value),
+        notes: document.getElementById("notes").value
+    };
 
-        let hist = hangar[voitureCourante].historique || [];
+    // Récupérer toutes les voitures cochées
+    let checkboxes = document.querySelectorAll('.check-voiture:checked');
+    if (checkboxes.length === 0) { alert("Sélectionnez au moins une voiture."); return; }
+
+    checkboxes.forEach(cb => {
+        let nomV = cb.value;
+        let hist = [...(hangar[nomV].historique || [])];
         hist.unshift(nouvelleSession);
-        // ICI : on ne touche PLUS aux pièces, juste à l'historique
-        update(ref(db, `hangar/${voitureCourante}`), { historique: hist }).then(() => {
-            document.getElementById("form-session").reset();
-        });
+        update(ref(db, `hangar/${nomV}`), { historique: hist });
     });
+
+    document.getElementById("form-session").reset();
+    alert("Session ajoutée aux voitures sélectionnées.");
+});
+    
 </script>
 
 </body>
