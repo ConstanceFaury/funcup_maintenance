@@ -537,6 +537,15 @@ function rafraichirCheckboxes() {
     }
 
     window.changerVoitureCourante = () => { voitureCourante = document.getElementById("select-voiture").value; majAffichage(); };
+    window.supprimerVoitureCourante = () => {
+        if (!voitureCourante) return;
+        if (confirm(`Êtes-vous sûr de vouloir supprimer la voiture ${voitureCourante} ?`)) {
+            remove(ref(db, `hangar/${voitureCourante}`)).then(() => {
+                voitureCourante = "";
+                alert("Voiture supprimée.");
+            });
+        }
+    };
 
     window.ajouterPiecePourCategorie = (cat) => {
         const nom = prompt("Nom de la pièce :");
@@ -545,7 +554,18 @@ function rafraichirCheckboxes() {
         push(ref(db, `hangar/${voitureCourante}/pieces/`), { cat, nom, limite: lim, heuresActuelles: 0, dernierChangement: "" });
     };
 
-    window.supprimerPiece = (id) => { if (confirm("Supprimer ?")) remove(ref(db, `hangar/${voitureCourante}/pieces/${id}`)); };
+   window.supprimerPiece = (id) => {
+        if (confirm("Supprimer cette pièce ?")) {
+            remove(ref(db, `hangar/${voitureCourante}/pieces/${id}`));
+        }
+    };
+    
+    window.annulerDateChangement = (id) => {
+        // Réinitialise la date de changement à vide
+        update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { 
+            dernierChangement: "" 
+        });
+    };
 
     window.remplacerPiece = (id) => {
         const date = document.getElementById("date-input-" + id).value;
@@ -717,11 +737,29 @@ groupes.forEach(g => {
 }
     
     
-    document.getElementById("form-voiture").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const nom = document.getElementById("new-voiture-nom").value;
-        const piecesObj = {};
-        cataloguePiecesStandard.forEach((p, i) => piecesObj["piece_" + i] = p);
-        set(ref(db, `hangar/${nom}`), { pieces: piecesObj, historique: [] });
+    document.getElementById("form-session").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const date = document.getElementById("date").value;
+    const evenement = document.getElementById("event").value;
+    const circuit = document.getElementById("circuit").value;
+    const duree = parseFloat(document.getElementById("duree").value);
+    const notes = document.getElementById("notes").value;
+    const checkboxes = document.querySelectorAll(".check-voiture:checked");
+
+    if (checkboxes.length === 0) { alert("Veuillez sélectionner au moins une voiture."); return; }
+
+    checkboxes.forEach(cb => {
+        const nomVoiture = cb.value;
+        const refHistorique = ref(db, `hangar/${nomVoiture}/historique`);
+        
+        // Récupérer l'historique actuel pour le mettre à jour
+        onValue(ref(db, `hangar/${nomVoiture}/historique`), (snapshot) => {
+            let hist = snapshot.val() || [];
+            hist.push({ date, evenement, circuit, duree, notes });
+            update(ref(db, `hangar/${nomVoiture}`), { historique: hist });
+        }, { onlyOnce: true });
     });
+    alert("Sessions enregistrées !");
+});
+    
 </script>
