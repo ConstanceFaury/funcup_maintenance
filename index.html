@@ -30,8 +30,13 @@
             padding: 20px;
         }
 
-        .container { max-width: 1400px; margin: 0 auto; }
-       
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 0 20px; /* Ajoute un petit espace sur les côtés pour mobile */
+            box-sizing: border-box;
+        }
+               
         .main-title {
             font-size: 32px;
             font-style: italic;
@@ -58,28 +63,37 @@
         header {
             background-color: var(--dark);
             color: white;
-            padding: 25px;
+            padding: 20px; /* Réduit un peu le padding pour mobile */
             border-radius: 10px;
             margin-bottom: 25px;
             border-left: 6px solid var(--primary);
-            
-            /* MODIFICATIONS ICI */
             display: flex;
+            flex-wrap: wrap; 
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap; /* Permet aux éléments de passer à la ligne */
-            gap: 20px;
+            gap: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            /* AJOUTE ÇA : */
+            width: 100%;
+            box-sizing: border-box; /* Crucial pour que le padding ne rajoute pas de largeur */
         }
         header h1 { margin: 0 0 5px 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
         header p { margin: 0; color: #aaa; font-size: 14px; }
 
         .selector-box {
             background: #252525;
-            padding: 12px 20px;
+            padding: 10px;
             border-radius: 8px;
             border: 1px solid #333;
-            text-align: right;
+            flex: 1 1 100%; /* Sur mobile, il prendra toute la ligne du header */
+            text-align: center;
+        }
+        
+        @media (min-width: 768px) {
+            .selector-box {
+                flex: 0 0 auto; /* Sur PC, il reprend sa taille normale à droite */
+                text-align: right;
+            }
         }
 
         .selector-box label { color: #fff; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
