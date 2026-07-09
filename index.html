@@ -466,6 +466,20 @@
             select.appendChild(opt);
         });
     }
+    
+    function rafraichirCheckboxes() {
+        const container = document.getElementById("container-checkbox-voitures");
+        if (!container) return; // Sécurité si l'élément n'existe pas encore
+        container.innerHTML = "";
+        Object.keys(hangar).forEach(nomVoiture => {
+            container.innerHTML += `
+                <div class="checkbox-row">
+                    <span>${nomVoiture}</span>
+                    <input type="checkbox" class="check-voiture" value="${nomVoiture}">
+                </div>
+            `;
+        });
+}
 
     window.changerVoitureCourante = () => { voitureCourante = document.getElementById("select-voiture").value; majAffichage(); };
 
@@ -484,6 +498,15 @@
         update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { heuresActuelles: 0, dernierChangement: date });
     };
 
+    window.supprimerCourse = function(index) {
+        if (!confirm("Supprimer cette session ?")) return;
+        
+        let hist = [...hangar[voitureCourante].historique];
+        hist.splice(index, 1);
+        
+        update(ref(db, `hangar/${voitureCourante}`), { historique: hist });
+    };
+
     function convertirEnDate(d) { return d ? new Date(d) : new Date(0); }
 
     function majAffichage() {
@@ -494,12 +517,12 @@
         
         
     const groupes = [
-    { id: "Moteur", titre: "⚙️ CATÉGORIE : MOTEUR", class: "cat-moteur", cles: ["Moteur"] },
-    { id: "Transmission", titre: "⛓️ CATÉGORIE : TRANSMISSION", class: "cat-transmission", cles: ["Transmission"] },
-    { id: "Freins", titre: "🛑 CATÉGORIE : FREINS", class: "cat-freins", cles: ["Frein", "Freinage"] },
-    { id: "Train avant", titre: "🚘 CATÉGORIE : TRAIN AVANT", class: "cat-train-avant", cles: ["Train avant"] },
-    { id: "Train arrière", titre: "🏎️ CATÉGORIE : TRAIN ARRIÈRE", class: "cat-train-arriere", cles: ["Train arrière"] }
-];
+        { id: "Moteur", titre: "⚙️ CATÉGORIE : MOTEUR", class: "cat-moteur", cles: ["Moteur"] },
+        { id: "Transmission", titre: "⛓️ CATÉGORIE : TRANSMISSION", class: "cat-transmission", cles: ["Transmission"] },
+        { id: "Freins", titre: "🛑 CATÉGORIE : FREINS", class: "cat-freins", cles: ["Frein", "Freinage"] },
+        { id: "Train avant", titre: "🚘 CATÉGORIE : TRAIN AVANT", class: "cat-train-avant", cles: ["Train avant"] },
+        { id: "Train arrière", titre: "🏎️ CATÉGORIE : TRAIN ARRIÈRE", class: "cat-train-arriere", cles: ["Train arrière"] }
+    ];
 
 groupes.forEach(g => {
     let div = document.createElement("div");
@@ -553,7 +576,29 @@ groupes.forEach(g => {
             container.appendChild(div);
             container.appendChild(table);
         });
+
+        const tbodyCourse = document.querySelector("#table-course tbody");
+    tbodyCourse.innerHTML = "";
+    let donneesVoiture = hangar[voitureCourante];
+    
+    if (donneesVoiture.historique && donneesVoiture.historique.length > 0) {
+        donneesVoiture.historique.forEach((session, index) => {
+            let tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><strong>${session.date}</strong></td>
+                <td>${session.evenement}</td>
+                <td>${session.circuit}</td>
+                <td><strong>${session.duree} h</strong></td>
+                <td>${session.notes || '-'}</td>
+                <td><button class="btn-delete-row" onclick="supprimerCourse(${index})">🗑️</button></td>
+            `;
+            tbodyCourse.appendChild(tr);
+        });
+    } else {
+        tbodyCourse.innerHTML = "<tr><td colspan='6'>Aucune session.</td></tr>";
     }
+}
+    
     
     document.getElementById("form-voiture").addEventListener("submit", (e) => {
         e.preventDefault();
