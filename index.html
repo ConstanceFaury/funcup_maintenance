@@ -55,50 +55,38 @@
             letter-spacing: 0.5px;
         }
 
-       header {
-        background-color: var(--dark);
-        color: white;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 25px;
-        border-left: 6px solid var(--primary);
-        
-        /* On change la disposition */
-        display: flex;
-        flex-direction: column; /* Force les éléments à s'empiler sur mobile */
-        align-items: center;    /* Centre tout */
-        gap: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    }
-    
-    /* Sur grand écran (tablette/PC), on remet en ligne */
-    @media (min-width: 768px) {
         header {
-            flex-direction: row;
+            background-color: var(--dark);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 6px solid var(--primary);
+            
+            /* MODIFICATIONS ICI */
+            display: flex;
             justify-content: space-between;
             align-items: center;
-            text-align: left;
+            flex-wrap: wrap; /* Permet aux éléments de passer à la ligne */
+            gap: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         }
-    }    
         header h1 { margin: 0 0 5px 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
         header p { margin: 0; color: #aaa; font-size: 14px; }
 
-       .selector-box {
+        .selector-box {
             background: #252525;
-            padding: 15px;
+            padding: 12px 20px;
             border-radius: 8px;
             border: 1px solid #333;
-            width: 100%; /* S'étire sur toute la largeur disponible */
-            box-sizing: border-box; /* Important pour que le padding ne dépasse pas */
-            text-align: center;
+            text-align: right;
         }
 
         .selector-box label { color: #fff; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
         .selector-box select {
-            .selector-box select {
-            width: 100%; 
+            width: 220px;
             padding: 8px;
-            margin-top: 10px;
+            margin-top: 5px;
             margin-bottom: 8px;
             font-weight: bold;
             font-size: 15px;
