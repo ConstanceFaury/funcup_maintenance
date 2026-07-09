@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <title>Fun Cup - Realtime Maintenance Expert</title>
     <style>
         :root {
@@ -279,6 +280,11 @@
 </head>
 <body>
 
+   <div style="margin: 20px 0; display: flex; gap: 10px;">
+        <button onclick="genererPDF('maintenance-tables-container', 'Maintenance_Pieces')" style="background-color: var(--warning); width: auto;">📄 PDF Maintenance</button>
+        <button onclick="genererPDF('table-course', 'Historique_Sessions')" style="background-color: var(--moteur-color); width: auto;">📊 PDF Sessions</button>
+    </div>
+
 <div class="container">
       
     <header>
@@ -507,6 +513,35 @@ function rafraichirCheckboxes() {
         hist.splice(index, 1);
         
         update(ref(db, `hangar/${voitureCourante}`), { historique: hist });
+    };
+
+    window.genererPDF = function(mode) {
+        const table = document.getElementById('maintenance-tables-container');
+        const toutesLesLignes = table.querySelectorAll('tbody tr');
+    
+        // 1. Si mode 'urgent', on cache les lignes qui ont le statut 'OK'
+        if (mode === 'urgent') {
+            toutesLesLignes.forEach(tr => {
+                // On vérifie si la ligne contient le texte "OK"
+                if (tr.textContent.includes('OK')) {
+                    tr.style.display = 'none';
+                }
+            });
+        }
+    
+        // 2. Options de génération
+        const opt = {
+            margin: 10,
+            filename: `Maintenance_${mode}_${voitureCourante}.pdf`,
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+    
+        // 3. Génération du PDF
+        html2pdf().set(opt).from(table).save().then(() => {
+            // 4. On remet tout visible après le téléchargement
+            toutesLesLignes.forEach(tr => tr.style.display = '');
+        });
     };
 
     function convertirEnDate(d) { return d ? new Date(d) : new Date(0); }
