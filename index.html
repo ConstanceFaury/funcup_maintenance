@@ -733,12 +733,15 @@ function majAffichage() {
 
 document.getElementById("form-session").addEventListener("submit", function(e) {
     e.preventDefault();
+    console.log("1. Clic sur Enregistrer détecté");
+
+    // Récupération des valeurs
+    let dateInput = document.getElementById("date").value;
+    if (!dateInput) { console.error("Erreur : La date est vide"); return; }
     
-    // 1. Récupérer la date
-    let dateParts = document.getElementById("date").value.split("-");
+    let dateParts = dateInput.split("-");
     let dateFr = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
     
-    // 2. Créer l'objet session
     let nouvelleSession = {
         date: dateFr,
         evenement: document.getElementById("event").value,
@@ -747,34 +750,35 @@ document.getElementById("form-session").addEventListener("submit", function(e) {
         notes: document.getElementById("notes").value
     };
 
-    // 3. Récupérer TOUTES les voitures cochées
+    // 3. Récupérer toutes les voitures cochées
     let checkboxes = document.querySelectorAll('.check-voiture:checked');
+    console.log("2. Nombre de voitures sélectionnées :", checkboxes.length);
+    
     if (checkboxes.length === 0) {
-        alert("Veuillez cocher au moins une voiture dans la liste !");
+        alert("Sélectionnez au moins une voiture.");
         return;
     }
 
-    // 4. Mettre à jour chaque voiture sélectionnée dans Firebase
-    let misesAJour = [];
+    // 4. Boucle de mise à jour
     checkboxes.forEach(cb => {
         let nomV = cb.value;
+        console.log("3. Tentative de mise à jour pour :", nomV);
+        
         if (hangar[nomV]) {
-            let hist = [...(hangar[nomV].historique || [])];
-            hist.unshift(nouvelleSession); // Ajoute la nouvelle session en haut de liste
+            let hist = Array.isArray(hangar[nomV].historique) ? [...hangar[nomV].historique] : [];
+            hist.unshift(nouvelleSession);
             
-            // On prépare la mise à jour pour cette voiture
-            misesAJour.push(update(ref(db, `hangar/${nomV}`), { historique: hist }));
+            update(ref(db, `hangar/${nomV}`), { historique: hist })
+                .then(() => console.log("4. Succès Firebase pour", nomV))
+                .catch((err) => console.error("5. ERREUR Firebase pour", nomV, err));
+        } else {
+            console.error("Erreur : La voiture", nomV, "n'existe pas dans l'objet hangar");
         }
     });
 
-    // 5. Une fois que toutes les voitures sont mises à jour
-    Promise.all(misesAJour).then(() => {
-        document.getElementById("form-session").reset();
-        alert("Session enregistrée pour les voitures sélectionnées.");
-        // Pas besoin d'appeler majAffichage() manuellement, 
-        // le onValue() en haut de ton code le fera tout seul !
-    });
+    document.getElementById("form-session").reset();
 });
+    
 </script>
 
 </body>
