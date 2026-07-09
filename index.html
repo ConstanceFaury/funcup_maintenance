@@ -492,24 +492,26 @@
         const container = document.getElementById("maintenance-tables-container");
         container.innerHTML = "";
         
-        const groupes = [
-            { id: "Moteur", titre: "⚙️ Catégorie : Moteur", class: "cat-moteur", cles: ["Moteur"] },
-            { id: "Transmission", titre: "⛓️ Catégorie : Transmission", class: "cat-trans", cles: ["Transmission"] },
-            { id: "Freins", titre: "🛑 Catégorie : Freins", class: "cat-freins", cles: ["Frein", "Freinage"] },
-            { id: "Train avant", titre: "🚘 Catégorie : Train Avant", class: "cat-train-av", cles: ["Train avant"] },
-            { id: "Train arrière", titre: "🏎️ Catégorie : Train Arrière", class: "cat-train-ar", cles: ["Train arrière"] }
-        ];
+        
+    const groupes = [
+    { id: "Moteur", titre: "⚙️ CATÉGORIE : MOTEUR", class: "cat-moteur", cles: ["Moteur"] },
+    { id: "Transmission", titre: "⛓️ CATÉGORIE : TRANSMISSION", class: "cat-transmission", cles: ["Transmission"] },
+    { id: "Freins", titre: "🛑 CATÉGORIE : FREINS", class: "cat-freins", cles: ["Frein", "Freinage"] },
+    { id: "Train avant", titre: "🚘 CATÉGORIE : TRAIN AVANT", class: "cat-train-avant", cles: ["Train avant"] },
+    { id: "Train arrière", titre: "🏎️ CATÉGORIE : TRAIN ARRIÈRE", class: "cat-train-arriere", cles: ["Train arrière"] }
+];
 
 groupes.forEach(g => {
-            let div = document.createElement("div");
-            div.className = "category-header " + g.class;
-            div.innerHTML = `<span>${g.titre}</span>`;
-            
-            let table = document.createElement("table");
-            table.innerHTML = `<thead><tr><th>Pièce</th><th>Marge</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody></tbody>`;
-            
-            // DÉCLARE LE TBODY ICI POUR POUVOIR L'UTILISER ENSUITE
-            let tbody = table.querySelector("tbody");
+    let div = document.createElement("div");
+    // On s'assure que la classe est bien appliquée
+    div.className = "category-header " + g.class;
+    
+    // Force l'affichage du titre dans un span
+    div.innerHTML = `<span style="color: white; font-weight: bold;">${g.titre}</span>`;
+    
+    let table = document.createElement("table");
+    table.innerHTML = `<thead><tr><th>Pièce</th><th>Marge</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody></tbody>`;
+    let tbody = table.querySelector("tbody");
             
             if (hangar[voitureCourante].pieces) {
                 Object.entries(hangar[voitureCourante].pieces).forEach(([id, p]) => {
