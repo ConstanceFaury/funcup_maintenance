@@ -5,83 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fun Cup - Realtime Maintenance Expert</title>
     <style>
-       :root {
-    --primary: #e60000;
-    --dark: #121212;
-    --light: #f5f6fa;
-    --success: #2ecc71;
-    --warning: #e67e22;
-    --danger: #e74c3c;
-    --moteur-color: #2980b9;
-    --trans-color: #8e44ad;
-    --frein-color: #c0392b;
-    --train-av-color: #16a085;
-    --train-ar-color: #d35400;
-}
-
-body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--light); color: var(--dark); margin: 0; padding: 20px; }
-.container { max-width: 1400px; margin: 0 auto; }
-
-/* Titres */
-.main-title { font-size: 32px; font-style: italic; color: white; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1px; }
-.main-title .orange { color: var(--primary); }
-.subtitle { margin: 0; color: #6c757d; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
-
-/* Header & Selector */
-header { background-color: var(--dark); color: white; padding: 25px; border-radius: 10px; margin-bottom: 25px; border-left: 6px solid var(--primary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-.selector-box { background: #252525; padding: 12px 20px; border-radius: 8px; border: 1px solid #333; text-align: right; }
-.selector-box label { color: #fff; font-size: 12px; text-transform: uppercase; }
-.selector-box select { width: 220px; padding: 8px; margin-top: 5px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-
-/* Grille et Cartes */
-.grid-main { display: grid; grid-template-columns: 350px 1fr; gap: 25px; }
-.card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; }
-.card h2 { margin: 0 0 20px 0; font-size: 18px; border-bottom: 2px solid var(--light); padding-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-
-/* Formulaires et Boutons */
-.form-group { margin-bottom: 15px; }
-label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; }
-input, select, textarea { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
-button { background-color: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; text-transform: uppercase; }
-button.secondary { background-color: #444; }
-button.btn-delete-car { background-color: var(--danger); padding: 5px 10px; font-size: 11px; width: 100%; margin-top: 5px; }
-
-/* Checkbox Row (Alignement) */
-.checkbox-row { display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: center !important; padding: 8px !important; border-bottom: 1px solid #ddd !important; }
-.checkbox-row input[type="checkbox"] { width: 20px !important; height: 20px !important; flex: 0 0 20px !important; margin: 0 !important; }
-
-/* Tableaux */
-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-th, td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 13px; }
-th { background-color: #fafafa; text-transform: uppercase; font-size: 11px; }
-
-/* RESPONSIVE MOBILE (UN SEUL BLOC) */
-@media (max-width: 768px) {
-    body { padding: 10px; }
-    .grid-main { grid-template-columns: 1fr; }
-    header { padding: 15px; text-align: center; justify-content: center; }
-    .selector-box { text-align: center; width: 100%; }
-    .selector-box select { width: 100%; }
-    button { padding: 15px !important; font-size: 16px !important; }
-    th, td { padding: 8px 4px; font-size: 11px; }
-}
+        :root { --primary: #e60000; --dark: #121212; --light: #f5f6fa; --moteur-color: #2980b9; --trans-color: #8e44ad; --frein-color: #c0392b; --train-av-color: #16a085; --train-ar-color: #d35400; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--light); padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        header { background-color: var(--dark); color: white; padding: 25px; border-radius: 10px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+        .grid-main { display: grid; grid-template-columns: 350px 1fr; gap: 25px; }
+        .card { background: white; padding: 25px; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .card h2 { margin: 0 0 20px 0; font-size: 18px; border-bottom: 2px solid var(--light); padding-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        button { background-color: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .checkbox-row { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #ddd; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; font-size: 13px; }
+        .badge-voiture { background-color: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 14px; margin-left: auto; }
+        .category-header { background: #333; color: white; padding: 10px; margin-top: 15px; border-radius: 5px; font-weight: bold; text-transform: uppercase; }
+        @media (max-width: 768px) { .grid-main { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-      
     <header>
-        <div>
-            <h1 class="main-title">
-                <span class="orange">4</span>-RACE
-            </h1>
-            <p class="subtitle">Fun Cup - Maintenance pièces <span id="loading-sync">🔄 Synchronisé</span></p>
-        </div>
+        <div><h1>4-RACE</h1></div>
         <div class="selector-box">
-            <label for="select-voiture">🚗 Sélectionner la Voiture :</label><br>
             <select id="select-voiture" onchange="changerVoitureCourante()"></select>
-            <button class="btn-delete-car" onclick="supprimerVoitureCourante()">🗑️ Supprimer cette voiture</button>
+            <button onclick="supprimerVoitureCourante()" style="background:#c0392b; margin-top:5px;">Supprimer</button>
         </div>
     </header>
 
@@ -90,83 +38,36 @@ th { background-color: #fafafa; text-transform: uppercase; font-size: 11px; }
             <div class="card">
                 <h2>➕ Nouvelle Voiture</h2>
                 <form id="form-voiture">
-                    <div class="form-group">
-                        <label for="new-voiture-nom">N° de Châssis / Nom :</label>
-                        <input type="text" id="new-voiture-nom" placeholder="ex: Châssis #420" required>
-                    </div>
-                    <button type="submit" class="secondary">Initialiser au Catalogue</button>
+                    <input type="text" id="new-voiture-nom" placeholder="N° Châssis" required>
+                    <button type="submit">Initialiser</button>
                 </form>
-                </div>
-
+            </div>
             <div class="card">
                 <h2>⏱️ Nouveau Roulage</h2>
                 <form id="form-session">
-                    <div class="form-group">
-                        <label for="date">Date du Roulage :</label>
-                        <input type="date" id="date" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="event">Événement :</label>
-                        <input type="text" id="event" placeholder="ex: 24H de Spa" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="circuit">Circuit :</label>
-                        <input type="text" id="circuit" placeholder="ex: Spa-Francorchamps" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="duree">Temps de roulage (heures) :</label>
-                        <input type="number" id="duree" step="0.01" min="0.01" placeholder="ex: 7.0" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="notes">Notes Techniques du Mécano :</label>
-                        <textarea id="notes" rows="3" placeholder="RAS, vérification pressions..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Voitures présentes :</label>
-                       <div id="container-checkbox-voitures" style="background:#eee; padding:10px; border-radius:5px;">
-                        </div>
-                    </div>
-                    <button type="submit">Enregistrer le roulage</button>
+                    <input type="date" id="date" required>
+                    <input type="text" id="event" placeholder="Événement" required>
+                    <input type="text" id="circuit" placeholder="Circuit" required>
+                    <input type="number" id="duree" step="0.01" placeholder="Heures" required>
+                    <textarea id="notes" placeholder="Notes..."></textarea>
+                    <div id="container-checkbox-voitures"></div>
+                    <button type="submit">Enregistrer</button>
                 </form>
             </div>
         </div>
-
         <div>
             <div class="card">
-                <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                    <h2 style="margin: 0; border: none; padding: 0;">🔧 Plan de Maintenance Catégorisé</h2>
-                    <span class="badge-voiture" id="titre-voiture-alertes">-</span>
-                </div>
-                
-                <div id="maintenance-tables-container">
-                    </div>
+                <div style="display:flex; align-items:center;"><h2>🔧 Plan de Maintenance</h2><span class="badge-voiture" id="titre-voiture-alertes">-</span></div>
+                <div id="maintenance-tables-container"></div>
             </div>
-
             <div class="card">
-                <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                    <h2 style="margin: 0; border: none; padding: 0;">📊 Tableau de Course & Sessions</h2>
-                    <span class="badge-voiture" id="titre-voiture-historique">-</span>
-                </div>
-                <div style="overflow-x: auto;">
-                    <table id="table-course">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Événement</th>
-                                <th>Circuit</th>
-                                <th>Durée de roulage</th>
-                                <th>Notes d'Atelier</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+                <div style="display:flex; align-items:center;"><h2>📊 Tableau de Course</h2><span class="badge-voiture" id="titre-voiture-historique">-</span></div>
+                <table id="table-course"><thead><tr><th>Date</th><th>Événement</th><th>Action</th></tr></thead><tbody></tbody></table>
             </div>
         </div>
     </div>
 </div>
-
+    
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
