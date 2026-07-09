@@ -578,72 +578,60 @@ function rafraichirCheckboxes() {
         { id: "Train arrière", titre: "🏎️ CATÉGORIE : TRAIN ARRIÈRE", class: "cat-train-arriere", cles: ["Train arrière"] }
     ];
 
-function majAffichage() {
-    if (!voitureCourante || !hangar[voitureCourante]) return;
-    document.getElementById("titre-voiture-alertes").textContent = voitureCourante;
-    const container = document.getElementById("maintenance-tables-container");
-    container.innerHTML = "";
+groupes.forEach(g => {
+    let div = document.createElement("div");
+    // On s'assure que la classe est bien appliquée
+    div.className = "category-header " + g.class;
     
-    const groupes = [
-        { id: "Moteur", titre: "⚙️ CATÉGORIE : MOTEUR", class: "cat-moteur", cles: ["Moteur"] },
-        { id: "Transmission", titre: "⛓️ CATÉGORIE : TRANSMISSION", class: "cat-transmission", cles: ["Transmission"] },
-        { id: "Freins", titre: "🛑 CATÉGORIE : FREINS", class: "cat-freins", cles: ["Frein", "Freinage"] },
-        { id: "Train avant", titre: "🚘 CATÉGORIE : TRAIN AVANT", class: "cat-train-avant", cles: ["Train avant"] },
-        { id: "Train arrière", titre: "🏎️ CATÉGORIE : TRAIN ARRIÈRE", class: "cat-train-arriere", cles: ["Train arrière"] }
-    ];
-
-    groupes.forEach(g => {
-        let div = document.createElement("div");
-        div.className = "category-header " + g.class;
-        div.innerHTML = `<span style="color: white; font-weight: bold;">${g.titre}</span>`;
-        
-        let table = document.createElement("table");
-        // Ton en-tête a 6 colonnes ici :
-        table.innerHTML = `<thead><tr><th>Pièce</th><th>Heures Actuelles</th><th>Potentiel</th><th>Marge Restante</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody>`;
-        let tbody = table.querySelector("tbody");
+    // Force l'affichage du titre dans un span
+    div.innerHTML = `<span style="color: white; font-weight: bold;">${g.titre}</span>`;
+    
+    let table = document.createElement("table");
+    table.innerHTML = `<thead><tr><th>Pièce</th><th>Marge</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody></tbody>`;
+    let tbody = table.querySelector("tbody");
             
-        if (hangar[voitureCourante].pieces) {
-            Object.entries(hangar[voitureCourante].pieces).forEach(([id, p]) => {
-                if (g.cles.includes(p.cat)) {
-                    let tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td><strong>${p.nom}</strong></td>
-                        <td>${p.heuresActuelles || 0} h</td>
-                        <td>${p.limite} h</td>
-                        <td>${(p.limite - (p.heuresActuelles || 0)).toFixed(1)} h</td>
-                        <td><span class="status ${ (p.limite - (p.heuresActuelles || 0)) <= 0 ? 'status-danger' : 'status-ok' }">
-                            ${(p.limite - (p.heuresActuelles || 0)) <= 0 ? 'Changement' : 'OK'}
-                        </span></td>
-                        <td>
-                            <div class="action-cell">
-                                <input type="date" id="date-input-${id}" class="table-date-input">
-                                <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
-                                <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
-                                <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-            });
-        }
+            if (hangar[voitureCourante].pieces) {
+                Object.entries(hangar[voitureCourante].pieces).forEach(([id, p]) => {
+                    if (g.cles.includes(p.cat)) {
+                        let tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td><strong>${p.nom}</strong></td>
+                            <td>${p.heuresActuelles || 0} h</td>
+                            <td>${p.limite} h</td>
+                            <td>${(p.limite - (p.heuresActuelles || 0)).toFixed(1)} h</td>
+                            <td><span class="status ${ (p.limite - (p.heuresActuelles || 0)) <= 0 ? 'status-danger' : 'status-ok' }">
+                                ${(p.limite - (p.heuresActuelles || 0)) <= 0 ? 'Changement' : 'OK'}
+                            </span></td>
+                            <td>
+                                <div class="action-cell">
+                                    <input type="date" id="date-input-${id}" class="table-date-input">
+                                    <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
+                                    <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
+                                    <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    }
+                });
+            }
             
-        // Bouton ajouter avec colspan="6" pour correspondre aux 6 colonnes du THEAD
-        let trAjout = document.createElement("tr");
-        trAjout.innerHTML = `
-            <td colspan="6" style="text-align:center; background:#f0f0f0; padding: 10px;">
-                <button class="btn-add-piece" onclick="ajouterPiecePourCategorie('${g.id}')">
-                    ➕ Ajouter une pièce dans ${g.id}
-                </button>
-            </td>
-        `;
-        tbody.appendChild(trAjout);
-        container.appendChild(div);
-        container.appendChild(table);
-    });
+            // Maintenant tbody est bien défini et utilisable ici
+            let trAjout = document.createElement("tr");
+            trAjout.innerHTML = `
+                <td colspan="6" style="text-align:center; background:#f0f0f0; padding: 10px;">
+                    <button class="btn-add-piece" onclick="ajouterPiecePourCategorie('${g.id}')">
+                        ➕ Ajouter une pièce dans ${g.id}
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(trAjout);
+            
+            container.appendChild(div);
+            container.appendChild(table);
+        });
 
-    // TABLEAU DES COURSES (Sorti de la boucle forEach)
-    const tbodyCourse = document.querySelector("#table-course tbody");
+        const tbodyCourse = document.querySelector("#table-course tbody");
     tbodyCourse.innerHTML = "";
     let donneesVoiture = hangar[voitureCourante];
     
@@ -664,6 +652,7 @@ function majAffichage() {
         tbodyCourse.innerHTML = "<tr><td colspan='6'>Aucune session.</td></tr>";
     }
 }
+    
     
     document.getElementById("form-voiture").addEventListener("submit", (e) => {
         e.preventDefault();
