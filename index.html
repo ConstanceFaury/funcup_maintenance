@@ -605,24 +605,37 @@ window.supprimerPiece = function(index) {
 }
 
 window.ajouterPiecePourCategorie = function(categorieId) {
-    const nomPiece = prompt(`Ajouter une pièce dans ${categorieId} :`);
-    if (!nomPiece) return;
-    
-    const limite = parseFloat(prompt("Limite d'heures (ex: 100) :"));
-    if (isNaN(limite)) return;
-
+    // 1. On crée une pièce vide par défaut
     const nouvellePiece = {
         cat: categorieId,
-        nom: nomPiece,
+        nom: "Nouvelle pièce",
         heuresActuelles: 0,
-        limite: limite,
+        limite: 100, // Valeur par défaut
         dernierChangement: ""
     };
+
+    // 2. On ajoute aux données existantes
+    let piecesActuelles = hangar[voitureCourante].pieces ? [...hangar[voitureCourante].pieces] : [];
+    piecesActuelles.push(nouvellePiece);
+    
+    // 3. Mise à jour Firebase (ce qui va déclencher le rafraîchissement auto)
+    update(ref(db, `hangar/${voitureCourante}`), { pieces: piecesActuelles });
+};
 
     let piecesActuelles = hangar[voitureCourante].pieces ? [...hangar[voitureCourante].pieces] : [];
     piecesActuelles.push(nouvellePiece);
     
     update(ref(db, `hangar/${voitureCourante}`), { pieces: piecesActuelles });
+};
+
+    window.majPiece = function(index, champ, valeur) {
+    let pieces = [...hangar[voitureCourante].pieces];
+    
+    // Si c'est un nombre (limite), on le convertit
+    pieces[index][champ] = (champ === 'limite') ? parseFloat(valeur) : valeur;
+    
+    // Mise à jour vers Firebase
+    update(ref(db, `hangar/${voitureCourante}`), { pieces: pieces });
 };
     // Fonction utilitaire à placer avant majAffichage
 function convertirEnDate(dateStr) {
@@ -707,28 +720,33 @@ function majAffichage() {
                     let infoDate = piece.dernierChangement ? `Monté le : ${piece.dernierChangement}` : "Aucun historique date";
 
                     let tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>
-                            <strong>${piece.nom}</strong>
-                            <span class="date-changement">${infoDate}</span>
-                        </td>
-                        <td>${heuresCalculees.toFixed(2)} h</td>
-                        <td>${piece.limite} h</td>
-                        <td style="color: ${reste <= 4 ? 'var(--danger)' : 'inherit'}; font-weight: ${reste <= 4 ? 'bold' : 'normal'}">
-                            ${reste.toFixed(2)} h
-                        </td>
-                        <td><span class="status ${statutClass}">${statutTexte}</span></td>
-                        <td>
-                            <div class="action-cell">
-                                <input type="date" id="date-change-${index}" class="table-date-input" value="${dateAujourdhui}">
-                                <button class="btn-reset" onclick="remplacerPieceFormulaire(${index})">🛠️</button>
-                                <button class="btn-cancel-date" onclick="annulerDateChangement(${index})" title="Effacer la date uniquement">❌</button>
-                               
-                            <button onclick="supprimerPiece(${index})" style="background:none; border:none; cursor:pointer; opacity:0.5; color:red;">🗑️</button>
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
+    tr.innerHTML = `
+        <td>
+            <input type="text" value="${piece.nom}" 
+                   onchange="majPiece('${index}', 'nom', this.value)" 
+                   style="width:90%; border:none; background:transparent; font-weight:bold;">
+            <span class="date-changement">${infoDate}</span>
+        </td>
+        <td>${heuresCalculees.toFixed(2)} h</td>
+        <td>
+            <input type="number" value="${piece.limite}" 
+                   onchange="majPiece('${index}', 'limite', this.value)" 
+                   style="width:50px; border:none; background:transparent;"> h
+        </td>
+        <td style="color: ${reste <= 4 ? 'var(--danger)' : 'inherit'}; font-weight: ${reste <= 4 ? 'bold' : 'normal'}">
+            ${reste.toFixed(2)} h
+        </td>
+        <td><span class="status ${statutClass}">${statutTexte}</span></td>
+        <td>
+            <div class="action-cell">
+                <input type="date" id="date-change-${index}" class="table-date-input" value="${dateAujourdhui}">
+                <button class="btn-reset" onclick="remplacerPieceFormulaire(${index})">🛠️</button>
+                <button class="btn-cancel-date" onclick="annulerDateChangement(${index})" title="Effacer la date uniquement">❌</button>
+                <button onclick="supprimerPiece(${index})" style="background:none; border:none; cursor:pointer; opacity:0.5; color:red;">🗑️</button>
+            </div>
+        </td>
+    `;
+    tbody.appendChild(tr);
                     
                 }
             });
