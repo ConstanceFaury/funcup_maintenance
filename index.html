@@ -281,8 +281,8 @@
 <body>
 
    <div style="margin: 20px 0; display: flex; gap: 10px;">
-        <button onclick="genererPDF('maintenance-tables-container', 'Maintenance_Pieces')" style="background-color: var(--warning); width: auto;">📄 PDF Maintenance</button>
-        <button onclick="genererPDF('table-course', 'Historique_Sessions')" style="background-color: var(--moteur-color); width: auto;">📊 PDF Sessions</button>
+        <button onclick="genererPDF('tout')" style="background-color: var(--moteur-color);">📄 PDF Liste Complète</button>
+        <button onclick="genererPDF('urgent')" style="background-color: var(--danger);">🚨 PDF Pièces à changer (Urgent)</button>
     </div>
 
 <div class="container">
@@ -515,34 +515,51 @@ function rafraichirCheckboxes() {
         update(ref(db, `hangar/${voitureCourante}`), { historique: hist });
     };
 
-    window.genererPDF = function(mode) {
-        const table = document.getElementById('maintenance-tables-container');
-        const toutesLesLignes = table.querySelectorAll('tbody tr');
+   window.genererPDF = function(mode) {
+    const container = document.getElementById('maintenance-tables-container');
     
-        // 1. Si mode 'urgent', on cache les lignes qui ont le statut 'OK'
-        if (mode === 'urgent') {
-            toutesLesLignes.forEach(tr => {
-                // On vérifie si la ligne contient le texte "OK"
-                if (tr.textContent.includes('OK')) {
-                    tr.style.display = 'none';
-                }
-            });
-        }
+    // 1. CRÉATION ET AJOUT DE L'EN-TÊTE DYNAMIQUE
+    const header = document.createElement('div');
+    header.id = "pdf-header"; // On lui donne un ID pour pouvoir le supprimer facilement après
+    header.innerHTML = `
+        <div style="border-bottom: 2px solid #e60000; margin-bottom: 20px; padding-bottom: 10px;">
+            <h1 style="color: #e60000; margin: 0;">4-RACE - MAINTENANCE</h1>
+            <p style="margin: 0;">Voiture : <strong>${voitureCourante}</strong> | Date : ${new Date().toLocaleDateString()}</p>
+        </div>
+    `;
+    container.prepend(header);
     
-        // 2. Options de génération
-        const opt = {
-            margin: 10,
-            filename: `Maintenance_${mode}_${voitureCourante}.pdf`,
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-    
-        // 3. Génération du PDF
-        html2pdf().set(opt).from(table).save().then(() => {
-            // 4. On remet tout visible après le téléchargement
-            toutesLesLignes.forEach(tr => tr.style.display = '');
+    // 1. On cache tout ce qui ne doit pas apparaître sur le PDF
+    const elementsACacher = container.querySelectorAll('.action-cell, .btn-add-piece, tr:has(.btn-add-piece)');
+    elementsACacher.forEach(el => el.style.display = 'none');
+
+    // 2. Si mode 'urgent', on cache les lignes qui sont OK
+    const toutesLesLignes = container.querySelectorAll('tbody tr');
+    if (mode === 'urgent') {
+        toutesLesLignes.forEach(tr => {
+            if (tr.textContent.includes('OK')) {
+                tr.style.display = 'none';
+            }
         });
+    }
+
+    // 3. Configuration PDF avec en-tête sympa
+    const opt = {
+        margin: [15, 10, 15, 10], // haut, gauche, bas, droite
+        filename: `Maintenance_${mode}_${voitureCourante}.pdf`,
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: 'avoid-all' }
     };
+
+    // 4. Génération
+    html2pdf().set(opt).from(container).save().then(() => {
+        // 5. On remet tout comme avant
+        elementsACacher.forEach(el => el.style.display = '');
+        toutesLesLignes.forEach(tr => tr.style.display = '');
+        document.getElementById("pdf-header").remove();
+    });
+};
 
     function convertirEnDate(d) { return d ? new Date(d) : new Date(0); }
 
