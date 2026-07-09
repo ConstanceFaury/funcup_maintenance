@@ -389,18 +389,64 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const cataloguePiecesStandard = [/* ... garde ton catalogue tel quel ... */];
+    const cataloguePiecesStandard = [
+        { cat: "Moteur", nom: "Moteur VW Evo 3 (Révision Générale)", heuresActuelles: 0, limite: 200, dernierChangement: "" },
+        { cat: "Moteur", nom: "Bougies", heuresActuelles: 0, limite: 100, dernierChangement: "" },
+        { cat: "Moteur", nom: "Démarreur", heuresActuelles: 0, limite: 400, dernierChangement: "" },
+        { cat: "Moteur", nom: "Alternateur", heuresActuelles: 0, limite: 400, dernierChangement: "" },
+        { cat: "Moteur", nom: "Huile et filtre à huile", heuresActuelles: 0, limite: 25, dernierChangement: "" },
+        { cat: "Moteur", nom: "Filtre à essence", heuresActuelles: 0, limite: 50, dernierChangement: "" },
+        { cat: "Moteur", nom: "Pompe à Essence", heuresActuelles: 0, limite: 200, dernierChangement: "" },
+        { cat: "Moteur", nom: "Filtre à air", heuresActuelles: 0, limite: 100, dernierChangement: "" },
+        { cat: "Moteur", nom: "Bobine", heuresActuelles: 0, limite: 150, dernierChangement: "" },
+        { cat: "Moteur", nom: "Régulateur de pression essence", heuresActuelles: 0, limite: 100, dernierChangement: "" },
+        { cat: "Moteur", nom: "Vase expansion et bouchon", heuresActuelles: 0, limite: 100, dernierChangement: "" },
+        { cat: "Moteur", nom: "Courroie d'accessoires", heuresActuelles: 0, limite: 100, dernierChangement: "" },
+        { cat: "Transmission", nom: "Boîte de Vitesses Sadev (Révision)", heuresActuelles: 0, limite: 90, dernierChangement: "" },
+        { cat: "Transmission", nom: "Disque d'embrayage", heuresActuelles: 0, limite: 200, dernierChangement: "" },
+        { cat: "Transmission", nom: "Mécanisme d'embrayage", heuresActuelles: 0, limite: 400, dernierChangement: "" },
+        { cat: "Transmission", nom: "Coupelle de pompe", heuresActuelles: 0, limite: 100, dernierChangement: "" },
+        { cat: "Transmission", nom: "Butée (coupelle et roulement)", heuresActuelles: 0, limite: 100, dernierChangement: "" },
+        { cat: "Transmission", nom: "Cardan droit", heuresActuelles: 0, limite: 50, dernierChangement: "" },
+        { cat: "Transmission", nom: "Cardan gauche", heuresActuelles: 0, limite: 50, dernierChangement: "" },
+        { cat: "Transmission", nom: "Groupe paddle shift", heuresActuelles: 0, limite: 150, dernierChangement: "" },
+        { cat: "Transmission", nom: "Vérin paddle shift", heuresActuelles: 0, limite: 150, dernierChangement: "" },
+        { cat: "Train avant", nom: "Roulement de roue AVD", heuresActuelles: 0, limite: 75, dernierChangement: "" },
+        { cat: "Train avant", nom: "Roulement de roue AVG", heuresActuelles: 0, limite: 75, dernierChangement: "" },
+        { cat: "Train avant", nom: "Rotule inférieure de pivot D", heuresActuelles: 0, limite: 50, dernierChangement: "" },
+        { cat: "Train avant", nom: "Rotule inférieure de pivot G", heuresActuelles: 0, limite: 50, dernierChangement: "" },
+        { cat: "Train avant", nom: "Rotule supérieure amortisseur D", heuresActuelles: 0, limite: 150, dernierChangement: "" },
+        { cat: "Train avant", nom: "Rotule supérieure amortisseur G", heuresActuelles: 0, limite: 150, dernierChangement: "" },
+        { cat: "Train avant", nom: "Rotule de direction D", heuresActuelles: 0, limite: 75, dernierChangement: "" },
+        { cat: "Train avant", nom: "Rotule de direction G", heuresActuelles: 0, limite: 75, dernierChangement: "" },
+        { cat: "Train avant", nom: "Barre de direction D", heuresActuelles: 0, limite: 150, dernierChangement: "" },
+        { cat: "Train avant", nom: "Barre de direction G", heuresActuelles: 0, limite: 150, dernierChangement: "" },
+        { cat: "Train avant", nom: "Amortisseur D", heuresActuelles: 0, limite: 80, dernierChangement: "" },
+        { cat: "Train avant", nom: "Amortisseur G", heuresActuelles: 0, limite: 80, dernierChangement: "" },
+        { cat: "Train arrière", nom: "Roulement de roue ARD", heuresActuelles: 0, limite: 75, dernierChangement: "" },
+        { cat: "Train arrière", nom: "Roulement de roue ARG", heuresActuelles: 0, limite: 75, dernierChangement: "" },
+        { cat: "Train arrière", nom: "Rotule inférieure de pivot D", heuresActuelles: 0, limite: 50, dernierChangement: "" },
+        { cat: "Train arrière", nom: "Rotule inférieure de pivot G", heuresActuelles: 0, limite: 50, dernierChangement: "" },
+        { cat: "Train arrière", nom: "Rotule supérieure amortisseur D", heuresActuelles: 0, limite: 150, dernierChangement: "" },
+        { cat: "Train arrière", nom: "Rotule supérieure amortisseur G", heuresActuelles: 0, limite: 150, dernierChangement: "" },
+        { cat: "Train arrière", nom: "Rotule de direction D", heuresActuelles: 0, limite: 75, dernierChangement: "" },
+        { cat: "Train arrière", nom: "Rotule de direction G", heuresActuelles: 0, limite: 75, dernierChangement: "" },
+        { cat: "Train arrière", nom: "Barre de direction D", heuresActuelles: 0, limite: 150, dernierChangement: "" },
+        { cat: "Train arrière", nom: "Barre de direction G", heuresActuelles: 0, limite: 150, dernierChangement: "" },
+        { cat: "Train arrière", nom: "Amortisseur D", heuresActuelles: 0, limite: 80, dernierChangement: "" },
+        { cat: "Train arrière", nom: "Amortisseur G", heuresActuelles: 0, limite: 80, dernierChangement: "" },
+        { cat: "Frein", nom: "Coupelles de pompes", heuresActuelles: 0, limite: 100, dernierChangement: "" },
+        { cat: "Frein", nom: "Coupelles d'étriers", heuresActuelles: 0, limite: 200, dernierChangement: "" }
+    ];
+
     let hangar = {};
     let voitureCourante = "";
 
     function obtenirDateDuJour() { return new Date().toISOString().split('T')[0]; }
 
-    const dbRef = ref(db, 'hangar');
-    onValue(dbRef, (snapshot) => {
+    onValue(ref(db, 'hangar'), (snapshot) => {
         hangar = snapshot.val() || {};
-        if (!voitureCourante || !hangar[voitureCourante]) {
-            voitureCourante = Object.keys(hangar)[0] || "";
-        }
+        if (!voitureCourante || !hangar[voitureCourante]) voitureCourante = Object.keys(hangar)[0] || "";
         rafraichirSelecteur();
         majAffichage();
     });
@@ -408,88 +454,72 @@
     function rafraichirSelecteur() {
         const select = document.getElementById("select-voiture");
         select.innerHTML = "";
-        Object.keys(hangar).forEach(nomVoiture => {
-            let option = document.createElement("option");
-            option.value = nomVoiture;
-            option.textContent = nomVoiture;
-            if (nomVoiture === voitureCourante) option.selected = true;
-            select.appendChild(option);
+        Object.keys(hangar).forEach(v => {
+            let opt = document.createElement("option");
+            opt.value = v; opt.textContent = v;
+            if (v === voitureCourante) opt.selected = true;
+            select.appendChild(opt);
         });
     }
 
-    window.changerVoitureCourante = function() {
-        voitureCourante = document.getElementById("select-voiture").value;
-        majAffichage();
+    window.changerVoitureCourante = () => { voitureCourante = document.getElementById("select-voiture").value; majAffichage(); };
+
+    window.ajouterPiecePourCategorie = (cat) => {
+        const nom = prompt("Nom de la pièce :");
+        if (!nom) return;
+        const lim = parseFloat(prompt("Limite heures :")) || 100;
+        push(ref(db, `hangar/${voitureCourante}/pieces/`), { cat, nom, limite: lim, heuresActuelles: 0, dernierChangement: "" });
     };
 
-    window.supprimerPiece = function(idPiece) {
-        if (!confirm("Supprimer cette pièce ?")) return;
-        remove(ref(db, `hangar/${voitureCourante}/pieces/${idPiece}`));
+    window.supprimerPiece = (id) => { if (confirm("Supprimer ?")) remove(ref(db, `hangar/${voitureCourante}/pieces/${id}`)); };
+
+    window.remplacerPiece = (id) => {
+        const date = document.getElementById("date-input-" + id).value;
+        if (!date) return;
+        update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { heuresActuelles: 0, dernierChangement: date });
     };
 
-    window.ajouterPiecePourCategorie = function(categorieId) {
-        const nomPiece = prompt("Nom de la pièce :");
-        if (!nomPiece) return;
-        const limite = parseFloat(prompt("Limite d'heures :")) || 100;
-        const nouvellePiece = { cat: categorieId, nom: nomPiece, heuresActuelles: 0, limite: limite, dernierChangement: "" };
-        push(ref(db, `hangar/${voitureCourante}/pieces/`), nouvellePiece);
-    };
-
-    function convertirEnDate(dateStr) {
-        if (!dateStr) return new Date(0);
-        const [d, m, y] = dateStr.split('/').map(Number);
-        return new Date(y, m - 1, d);
-    }
+    function convertirEnDate(d) { return d ? new Date(d) : new Date(0); }
 
     function majAffichage() {
         if (!voitureCourante || !hangar[voitureCourante]) return;
-        
         document.getElementById("titre-voiture-alertes").textContent = voitureCourante;
         const container = document.getElementById("maintenance-tables-container");
         container.innerHTML = "";
-
-        const groupesAxe = [
+        
+        const groupes = [
             { id: "Moteur", titre: "⚙️ Catégorie : Moteur", class: "cat-moteur", cles: ["Moteur"] },
-            { id: "Transmission", titre: "⛓️ Catégorie : Transmission", class: "cat-transmission", cles: ["Transmission"] },
+            { id: "Transmission", titre: "⛓️ Catégorie : Transmission", class: "cat-trans", cles: ["Transmission"] },
             { id: "Freins", titre: "🛑 Catégorie : Freins", class: "cat-freins", cles: ["Frein", "Freinage"] },
-            { id: "Train avant", titre: "🚘 Catégorie : Train Avant", class: "cat-train-avant", cles: ["Train avant"] },
-            { id: "Train arrière", titre: "🏎️ Catégorie : Train Arrière", class: "cat-train-arriere", cles: ["Train arrière"] }
+            { id: "Train avant", titre: "🚘 Catégorie : Train Avant", class: "cat-train-av", cles: ["Train avant"] },
+            { id: "Train arrière", titre: "🏎️ Catégorie : Train Arrière", class: "cat-train-ar", cles: ["Train arrière"] }
         ];
 
-        groupesAxe.forEach(groupe => {
-            let divGroupe = document.createElement("div");
-            divGroupe.className = `category-header ${groupe.class}`;
-            divGroupe.innerHTML = `<span>${groupe.titre}</span>`;
+        groupes.forEach(g => {
+            let div = document.createElement("div");
+            div.className = "category-header " + g.class;
+            div.innerHTML = `<span>${g.titre}</span>`;
             let table = document.createElement("table");
-            table.innerHTML = `<thead><tr><th>Pièce</th><th>Heures</th><th>Potentiel</th><th>Marge</th><th>Statut</th><th>Action</th></tr></thead><tbody></tbody>`;
-            let tbody = table.querySelector("tbody");
-
+            table.innerHTML = `<thead><tr><th>Pièce</th><th>Marge</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody></tbody>`;
+            
             if (hangar[voitureCourante].pieces) {
-                Object.entries(hangar[voitureCourante].pieces).forEach(([idPiece, piece]) => {
-                    if (groupe.cles.includes(piece.cat)) {
-                        const dateMontage = convertirEnDate(piece.dernierChangement);
-                        const heuresCalculees = (hangar[voitureCourante].historique || [])
-                            .filter(s => convertirEnDate(s.date) >= dateMontage)
-                            .reduce((total, s) => total + s.duree, 0);
-                        
-                        let reste = piece.limite - heuresCalculees;
-                        let statutClass = reste <= 0 ? "status-danger" : (reste <= 4 ? "status-warn" : "status-ok");
-                        
+                Object.entries(hangar[voitureCourante].pieces).forEach(([id, p]) => {
+                    if (g.cles.includes(p.cat)) {
                         let tr = document.createElement("tr");
-                        tr.innerHTML = `<td>${piece.nom}</td><td>${heuresCalculees.toFixed(1)}h</td><td>${piece.limite}h</td><td>${reste.toFixed(1)}h</td>
-                                        <td><span class="status ${statutClass}">${reste <= 0 ? "Changement" : "OK"}</span></td>
-                                        <td><button onclick="supprimerPiece('${idPiece}')">🗑️</button></td>`;
-                        tbody.appendChild(tr);
+                        tr.innerHTML = `<td>${p.nom}</td><td>${p.limite}h</td><td>OK</td>
+                                        <td><input type="date" id="date-input-${id}"></td>
+                                        <td><button onclick="remplacerPiece('${id}')">🛠️</button><button onclick="supprimerPiece('${id}')">🗑️</button></td>`;
+                        table.querySelector("tbody").appendChild(tr);
                     }
                 });
             }
-            tbody.innerHTML += `<tr><td colspan="6"><button onclick="ajouterPiecePourCategorie('${groupe.id}')">➕ Ajouter dans ${groupe.id}</button></td></tr>`;
-            container.appendChild(divGroupe);
+            table.querySelector("tbody").innerHTML += `<tr><td colspan="5"><button onclick="ajouterPiecePourCategorie('${g.id}')">➕ Ajouter</button></td></tr>`;
+            container.appendChild(div);
             container.appendChild(table);
         });
     }
-
-    document.getElementById("form-voiture").addEventListener("submit", function(e) {
+    
+    document.getElementById("form-voiture").addEventListener("submit", (e) => {
         e.preventDefault();
         const nom = document.getElementById("new-voiture-nom").value;
         const piecesObj = {};
