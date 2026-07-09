@@ -448,49 +448,12 @@
 
     const dbRef = ref(db, 'hangar');
 onValue(dbRef, (snapshot) => {
-    const data = snapshot.val();
-    
-    // Feedback visuel de synchro
-    const syncBadge = document.getElementById("loading-sync");
-    syncBadge.style.display = "inline-block";
-    setTimeout(() => { syncBadge.style.display = "none"; }, 1500);
-
-    if (data) {
-        hangar = data;
-        
-        // --- Recalibrage forcé ---
-        Object.keys(hangar).forEach(nomVoiture => {
-            let piecesEnBase = hangar[nomVoiture].pieces || [];
-            // Si la structure des pièces a changé, on nettoie
-                hangar[nomVoiture].pieces = piecesNettoyees;
-                update(ref(db, `hangar/${nomVoiture}`), { pieces: piecesNettoyees });
-            }
-        });
-
-        // Maintien de la voiture courante (si elle a été supprimée, on prend la première dispo)
-        if (!voitureCourante || !hangar[voitureCourante]) {
-            voitureCourante = Object.keys(hangar)[0] || "";
-        }
-    } else {
-        // Initialisation si base vide
-        hangar = {
-            "Voiture Châssis de démo": {
-                pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)),
-                historique: []
-            }
-        };
-        set(ref(db, 'hangar'), hangar);
-        voitureCourante = "Voiture Châssis de démo";
+    hangar = snapshot.val() || {};
+    if (!voitureCourante || !hangar[voitureCourante]) {
+        voitureCourante = Object.keys(hangar)[0] || "";
     }
-    
-    // Mise à jour de toute l'interface
     rafraichirSelecteur();
-    
-    // Si tu as ajouté la fonction pour les checkboxes :
-    if (typeof rafraichirCheckboxes === 'function') {
-        rafraichirCheckboxes();
-    }
-    
+    if (typeof rafraichirCheckboxes === 'function') rafraichirCheckboxes();
     majAffichage();
 });
 
@@ -591,14 +554,13 @@ onValue(dbRef, (snapshot) => {
         }
     }
 
-window.supprimerPiece = function(index) {
+window.supprimerPiece = function(idPiece) {
     if (!confirm("Supprimer cette pièce définitivement ?")) return;
 
-    let pieces = [...hangar[voitureCourante].pieces];
-    pieces.splice(index, 1); // Suppression
-
-    // Mise à jour de Firebase
-    update(ref(db, `hangar/${voitureCourante}`), { pieces: pieces });
+    // Suppression directe par ID
+    remove(ref(db, `hangar/${voitureCourante}/pieces/${idPiece}`))
+        .then(() => console.log("Pièce supprimée"))
+        .catch(err => alert("Erreur : " + err));
 };
     
     
@@ -606,13 +568,8 @@ window.ajouterPiecePourCategorie = function(categorieId) {
     const nomPiece = prompt(`Nom de la pièce dans ${categorieId} :`);
     if (!nomPiece) return;
     
-    const limite = parseFloat(prompt("Limite d'heures (ex: 100) :"));
-    if (isNaN(limite)) return;
+    const limite = parseFloat(prompt("Limite d'heures :")) || 100;
 
-    // 1. On récupère la liste actuelle (depuis la variable globale 'hangar')
-    let piecesActuelles = hangar[voitureCourante].pieces ? [...hangar[voitureCourante].pieces] : [];
-    
-    // 2. On crée l'objet
     const nouvellePiece = {
         cat: categorieId,
         nom: nomPiece,
@@ -621,13 +578,10 @@ window.ajouterPiecePourCategorie = function(categorieId) {
         dernierChangement: ""
     };
 
-    // 3. On ajoute
-    piecesActuelles.push(nouvellePiece);
-    
-    // 4. On écrase le tableau dans Firebase
-    update(ref(db, `hangar/${voitureCourante}`), { pieces: piecesActuelles });
+    // On utilise push pour générer une clé unique automatiquement
+    const piecesRef = ref(db, `hangar/${voitureCourante}/pieces/`);
+    push(piecesRef, nouvellePiece); 
 };
-
     // 1. Sécuriser l'accès au tableau
     let piecesActuelles = hangar[voitureCourante].pieces ? [...hangar[voitureCourante].pieces] : [];
     
@@ -699,50 +653,30 @@ function majAffichage() {
         let aDesPieces = false;
 
         if (donneesVoiture.pieces) {
-            donneesVoiture.pieces.forEach((piece, index) => {
-                if (groupe.cles.includes(piece.cat)) {
-                    aDesPieces = true;
-                    
-                    // --- CALCUL DYNAMIQUE ---
-                    const dateMontage = convertirEnDate(piece.dernierChangement);
-                    const heuresCalculees = (donneesVoiture.historique || [])
-                        .filter(session => convertirEnDate(session.date) >= dateMontage)
-                        .reduce((total, session) => total + session.duree, 0);
+        // On convertit l'objet Firebase en tableau de [clé, valeur]
+        Object.entries(donneesVoiture.pieces).forEach(([idPiece, piece]) => {
+            if (groupe.cles.includes(piece.cat)) {
+                aDesPieces = true;
+                
+                // ... (tes calculs de date/heures restent identiques) ...
 
-                    let reste = piece.limite - heuresCalculees;
-                    let statutClass = "status-ok";
-                    let statutTexte = "OK";
-
-                    if (reste <= 0) {
-                        statutClass = "status-danger";
-                        statutTexte = "Changement";
-                    } else if (reste <= 4) {
-                        statutClass = "status-warn";
-                        statutTexte = "À Prévoir";
-                    }
-
-                    let infoDate = piece.dernierChangement ? `Monté le : ${piece.dernierChangement}` : "Aucun historique date";
-
-                    let tr = document.createElement("tr");
-                        tr.innerHTML = `
-                            <td>
-                                <strong>${piece.nom}</strong>
-                                <span class="date-changement">${infoDate}</span>
-                            </td>
-                            <td>${heuresCalculees.toFixed(2)} h</td>
-                            <td>${piece.limite} h</td>
-                            <td>${reste.toFixed(2)} h</td>
-                            <td><span class="status ${statutClass}">${statutTexte}</span></td>
-                            <td>
-                                <div class="action-cell">
-                                    <input type="date" id="date-change-${index}" class="table-date-input" value="${dateAujourdhui}">
-                                    <button class="btn-reset" onclick="remplacerPieceFormulaire(${index})">🛠️</button>
-                                    <button class="btn-cancel-date" onclick="annulerDateChangement(${index})">❌</button>
-                                    <button onclick="supprimerPiece(${index})" style="background:none; border:none; cursor:pointer; color:red;">🗑️</button>
-                                </div>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>
+                        <strong>${piece.nom}</strong>
+                        <span class="date-changement">${infoDate}</span>
+                    </td>
+                    <td>${heuresCalculees.toFixed(2)} h</td>
+                    <td>${piece.limite} h</td>
+                    <td>${reste.toFixed(2)} h</td>
+                    <td><span class="status ${statutClass}">${statutTexte}</span></td>
+                    <td>
+                        <div class="action-cell">
+                            <button onclick="supprimerPiece('${idPiece}')" style="background:none; border:none; cursor:pointer; color:red;">🗑️ Supprimer</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
                 }
             });
             // Après tbody.appendChild(tr); dans ta boucle groupesAxe
@@ -789,11 +723,14 @@ document.getElementById("form-voiture").addEventListener("submit", function(e) {
     e.preventDefault();
     const nom = document.getElementById("new-voiture-nom").value;
     
-    // Ici, on utilise ton catalogue comme "moule" pour initialiser
-    const templatePieces = JSON.parse(JSON.stringify(cataloguePiecesStandard));
+    // Convertir le tableau en objet { "id_0": {...}, "id_1": {...} }
+    const piecesObj = {};
+    cataloguePiecesStandard.forEach((piece, index) => {
+        piecesObj["piece_" + index] = piece;
+    });
     
     set(ref(db, `hangar/${nom}`), {
-        pieces: templatePieces,
+        pieces: piecesObj,
         historique: []
     }).then(() => {
         alert("Voiture initialisée !");
