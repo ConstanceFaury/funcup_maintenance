@@ -447,55 +447,29 @@
     }
 
     const dbRef = ref(db, 'hangar');
+    
 onValue(dbRef, (snapshot) => {
     const data = snapshot.val();
+    if (!data) return; // Si pas de donnée, on arrête
     
-    // Feedback visuel de synchro
-    const syncBadge = document.getElementById("loading-sync");
-    syncBadge.style.display = "inline-block";
-    setTimeout(() => { syncBadge.style.display = "none"; }, 1500);
-
-    if (data) {
-        hangar = data;
-        
-        // --- Recalibrage forcé ---
-        Object.keys(hangar).forEach(nomVoiture => {
-            let piecesEnBase = hangar[nomVoiture].pieces || [];
-            // Si la structure des pièces a changé, on nettoie
-            if (piecesEnBase.length !== cataloguePiecesStandard.length) {
-                let piecesNettoyees = cataloguePiecesStandard.map(pieceStandard => {
-                    let correspondance = piecesEnBase.find(p => p.nom === pieceStandard.nom);
-                    return correspondance ? correspondance : JSON.parse(JSON.stringify(pieceStandard));
-                });
-                hangar[nomVoiture].pieces = piecesNettoyees;
-                update(ref(db, `hangar/${nomVoiture}`), { pieces: piecesNettoyees });
-            }
-        });
-
-        // Maintien de la voiture courante (si elle a été supprimée, on prend la première dispo)
-        if (!voitureCourante || !hangar[voitureCourante]) {
-            voitureCourante = Object.keys(hangar)[0] || "";
-        }
-    } else {
-        // Initialisation si base vide
-        hangar = {
-            "Voiture Châssis de démo": {
-                pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)),
-                historique: []
-            }
-        };
-        set(ref(db, 'hangar'), hangar);
-        voitureCourante = "Voiture Châssis de démo";
-    }
+    hangar = data;
     
-    // Mise à jour de toute l'interface
+    // 1. Mise à jour de l'interface
     rafraichirSelecteur();
     
-    // Si tu as ajouté la fonction pour les checkboxes :
-    if (typeof rafraichirCheckboxes === 'function') {
-        rafraichirCheckboxes();
-    }
+    // 2. Génération des checkboxes (on force ici)
+    const container = document.getElementById("container-checkbox-voitures");
+    container.innerHTML = ""; // On vide avant de remplir
     
+    Object.keys(hangar).forEach(nomVoiture => {
+        container.innerHTML += `
+            <div class="checkbox-row">
+                <span>${nomVoiture}</span>
+                <input type="checkbox" class="check-voiture" value="${nomVoiture}">
+            </div>
+        `;
+    });
+
     majAffichage();
 });
 
@@ -511,19 +485,19 @@ onValue(dbRef, (snapshot) => {
         });
     }
 
-    function rafraichirCheckboxes() {
-        const container = document.getElementById("container-checkbox-voitures");
-        container.innerHTML = "";
-        Object.keys(hangar).forEach(nomVoiture => {
-            // On crée un conteneur qui force l'alignement
-            container.innerHTML += `
-                <div class="checkbox-row">
-                    <span>${nomVoiture}</span>
-                    <input type="checkbox" class="check-voiture" value="${nomVoiture}">
-                </div>
-            `;
-        });
-    }
+function rafraichirCheckboxes() {
+    const container = document.getElementById("container-checkbox-voitures");
+    if (!container) return; // Sécurité au cas où le div n'existe pas
+    container.innerHTML = "";
+    Object.keys(hangar).forEach(nomVoiture => {
+        container.innerHTML += `
+            <div class="checkbox-row">
+                <span>${nomVoiture}</span>
+                <input type="checkbox" class="check-voiture" value="${nomVoiture}">
+            </div>
+        `;
+    });
+}
 
     window.changerVoitureCourante = function() {
         voitureCourante = document.getElementById("select-voiture").value;
