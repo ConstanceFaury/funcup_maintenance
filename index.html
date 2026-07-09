@@ -189,7 +189,7 @@
         button:hover { background-color: #cc0000; }
         button.secondary { background-color: #444; }
         button.secondary:hover { background-color: #222; }
-        
+    
         button.btn-reset {
             background-color: #555; padding: 5px 10px; font-size: 11px; width: auto; border-radius: 3px;
             display: inline-block; text-transform: none; margin-right: 2px;
@@ -204,15 +204,20 @@
 
         button.btn-delete-row {
             background-color: #e74c3c; padding: 4px 8px; font-size: 11px; width: auto; border-radius: 4px;
-            text-transform: none; font-weight: normal;
+            text-transform: none; font-weight: normal; color: white; border: none; cursor: pointer;
         }
         button.btn-delete-row:hover { background-color: #c0392b; }
-
+        
         button.btn-delete-car {
             background-color: #c0392b; padding: 5px 10px; font-size: 11px; width: 100%; border-radius: 4px;
             text-transform: uppercase; font-weight: bold; margin-top: 5px;
         }
         button.btn-delete-car:hover { background-color: #962d22; }
+
+        .btn-add-piece {
+            cursor: pointer; border: none; background: transparent; font-size: 12px; color: #555; width: 100%;
+        }
+        .btn-add-piece:hover { color: var(--primary); }
 
         .status {
             padding: 3px 6px; border-radius: 4px; color: white; font-weight: bold; display: inline-block; font-size: 10px; text-transform: uppercase;
@@ -495,25 +500,54 @@
             { id: "Train arrière", titre: "🏎️ Catégorie : Train Arrière", class: "cat-train-ar", cles: ["Train arrière"] }
         ];
 
-        groupes.forEach(g => {
+groupes.forEach(g => {
             let div = document.createElement("div");
             div.className = "category-header " + g.class;
             div.innerHTML = `<span>${g.titre}</span>`;
+            
             let table = document.createElement("table");
             table.innerHTML = `<thead><tr><th>Pièce</th><th>Marge</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody></tbody>`;
+            
+            // DÉCLARE LE TBODY ICI POUR POUVOIR L'UTILISER ENSUITE
+            let tbody = table.querySelector("tbody");
             
             if (hangar[voitureCourante].pieces) {
                 Object.entries(hangar[voitureCourante].pieces).forEach(([id, p]) => {
                     if (g.cles.includes(p.cat)) {
                         let tr = document.createElement("tr");
-                        tr.innerHTML = `<td>${p.nom}</td><td>${p.limite}h</td><td>OK</td>
-                                        <td><input type="date" id="date-input-${id}"></td>
-                                        <td><button onclick="remplacerPiece('${id}')">🛠️</button><button onclick="supprimerPiece('${id}')">🗑️</button></td>`;
-                        table.querySelector("tbody").appendChild(tr);
+                        tr.innerHTML = `
+                            <td><strong>${p.nom}</strong></td>
+                            <td>${p.heuresActuelles || 0} h</td>
+                            <td>${p.limite} h</td>
+                            <td>${(p.limite - (p.heuresActuelles || 0)).toFixed(1)} h</td>
+                            <td><span class="status ${ (p.limite - (p.heuresActuelles || 0)) <= 0 ? 'status-danger' : 'status-ok' }">
+                                ${(p.limite - (p.heuresActuelles || 0)) <= 0 ? 'Changement' : 'OK'}
+                            </span></td>
+                            <td>
+                                <div class="action-cell">
+                                    <input type="date" id="date-input-${id}" class="table-date-input">
+                                    <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
+                                    <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
+                                    <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
                     }
                 });
             }
-            table.querySelector("tbody").innerHTML += `<tr><td colspan="5"><button onclick="ajouterPiecePourCategorie('${g.id}')">➕ Ajouter</button></td></tr>`;
+            
+            // Maintenant tbody est bien défini et utilisable ici
+            let trAjout = document.createElement("tr");
+            trAjout.innerHTML = `
+                <td colspan="6" style="text-align:center; background:#f0f0f0; padding: 10px;">
+                    <button class="btn-add-piece" onclick="ajouterPiecePourCategorie('${g.id}')">
+                        ➕ Ajouter une pièce dans ${g.id}
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(trAjout);
+            
             container.appendChild(div);
             container.appendChild(table);
         });
