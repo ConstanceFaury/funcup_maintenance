@@ -248,7 +248,7 @@
             font-size: 12px;
             display: none;
         }
-       /* Container des checkboxes */
+      /* Container des checkboxes */
         #container-checkbox-voitures {
             display: flex;
             flex-direction: column;
@@ -258,21 +258,23 @@
             border-radius: 5px;
         }
         
-        /* Ligne contenant le nom et la case */
+        /* On force chaque ligne à bien se comporter */
         .checkbox-line {
-            display: flex;
-            align-items: center;      /* Aligne verticalement le texte et la case */
-            justify-content: space-between; /* Espace le texte à gauche et la case à droite */
+            display: flex !important; /* Force le flex */
+            flex-direction: row !important; /* Force l'alignement horizontal */
+            align-items: center; 
+            justify-content: space-between;
             width: 100%;
             cursor: pointer;
             font-size: 13px;
             font-weight: 500;
         }
         
-        /* Force la case à rester à droite */
-        .checkbox-line input {
-            width: auto;              /* Empêche l'input de prendre toute la largeur */
-            margin: 0;                /* Retire les marges par défaut */
+        /* On annule le width: 100% pour les cases à cocher */
+        .checkbox-line input[type="checkbox"] {
+            width: auto !important;
+            margin: 0 !important;
+            display: inline-block !important;
         }
     </style>
 </head>
@@ -515,19 +517,18 @@ onValue(dbRef, (snapshot) => {
         });
     }
 
-function rafraichirCheckboxes() {
-    const container = document.getElementById("container-checkbox-voitures");
-    container.innerHTML = "";
-    Object.keys(hangar).forEach(nomVoiture => {
-        // Ajout de la classe 'checkbox-line' ici
-        container.innerHTML += `
-            <label class="checkbox-line">
-                <span>${nomVoiture}</span>
-                <input type="checkbox" class="check-voiture" value="${nomVoiture}">
-            </label>
-        `;
-    });
-}
+    function rafraichirCheckboxes() {
+        const container = document.getElementById("container-checkbox-voitures");
+        container.innerHTML = "";
+        Object.keys(hangar).forEach(nomVoiture => {
+            container.innerHTML += `
+                <label class="checkbox-line">
+                    ${nomVoiture}
+                    <input type="checkbox" class="check-voiture" value="${nomVoiture}">
+                </label>
+            `;
+        });
+    }
 
     window.changerVoitureCourante = function() {
         voitureCourante = document.getElementById("select-voiture").value;
