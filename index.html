@@ -505,16 +505,18 @@ onValue(dbRef, (snapshot) => {
     }
 
     function rafraichirCheckboxes() {
-    const container = document.getElementById("container-checkbox-voitures");
-    container.innerHTML = "";
-    Object.keys(hangar).forEach(nomVoiture => {
-        container.innerHTML += `
-            <label style="display:block; cursor:pointer; font-size:12px;">
-                <input type="checkbox" class="check-voiture" value="${nomVoiture}"> ${nomVoiture}
-            </label>
-        `;
-    });
-}
+        const container = document.getElementById("container-checkbox-voitures");
+        container.innerHTML = "";
+        Object.keys(hangar).forEach(nomVoiture => {
+            // On crée un label qui englobe tout pour que cliquer sur le texte coche la case
+            container.innerHTML += `
+                <label class="checkbox-line">
+                    <span>${nomVoiture}</span>
+                    <input type="checkbox" class="check-voiture" value="${nomVoiture}">
+                </label>
+            `;
+        });
+    }
 
     window.changerVoitureCourante = function() {
         voitureCourante = document.getElementById("select-voiture").value;
