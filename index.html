@@ -462,11 +462,6 @@ onValue(dbRef, (snapshot) => {
         Object.keys(hangar).forEach(nomVoiture => {
             let piecesEnBase = hangar[nomVoiture].pieces || [];
             // Si la structure des pièces a changé, on nettoie
-            if (piecesEnBase.length !== cataloguePiecesStandard.length) {
-                let piecesNettoyees = cataloguePiecesStandard.map(pieceStandard => {
-                    let correspondance = piecesEnBase.find(p => p.nom === pieceStandard.nom);
-                    return correspondance ? correspondance : JSON.parse(JSON.stringify(pieceStandard));
-                });
                 hangar[nomVoiture].pieces = piecesNettoyees;
                 update(ref(db, `hangar/${nomVoiture}`), { pieces: piecesNettoyees });
             }
@@ -599,23 +594,25 @@ onValue(dbRef, (snapshot) => {
 window.supprimerPiece = function(index) {
     if (!confirm("Supprimer cette pièce définitivement ?")) return;
 
-    // Création d'une copie du tableau pour éviter les mutations directes
     let pieces = [...hangar[voitureCourante].pieces];
-    pieces.splice(index, 1);
+    pieces.splice(index, 1); // Suppression
 
-    // Mise à jour explicite dans Firebase
-    update(ref(db, `hangar/${voitureCourante}`), { pieces: pieces })
-        .catch((error) => console.error("Erreur mise à jour :", error));
+    // Mise à jour de Firebase
+    update(ref(db, `hangar/${voitureCourante}`), { pieces: pieces });
 };
     
     
 window.ajouterPiecePourCategorie = function(categorieId) {
-    const nomPiece = prompt(`Ajouter une pièce dans ${categorieId} :`);
+    const nomPiece = prompt(`Nom de la pièce dans ${categorieId} :`);
     if (!nomPiece) return;
     
     const limite = parseFloat(prompt("Limite d'heures (ex: 100) :"));
     if (isNaN(limite)) return;
 
+    // 1. On récupère la liste actuelle (depuis la variable globale 'hangar')
+    let piecesActuelles = hangar[voitureCourante].pieces ? [...hangar[voitureCourante].pieces] : [];
+    
+    // 2. On crée l'objet
     const nouvellePiece = {
         cat: categorieId,
         nom: nomPiece,
@@ -623,6 +620,13 @@ window.ajouterPiecePourCategorie = function(categorieId) {
         limite: limite,
         dernierChangement: ""
     };
+
+    // 3. On ajoute
+    piecesActuelles.push(nouvellePiece);
+    
+    // 4. On écrase le tableau dans Firebase
+    update(ref(db, `hangar/${voitureCourante}`), { pieces: piecesActuelles });
+};
 
     // 1. Sécuriser l'accès au tableau
     let piecesActuelles = hangar[voitureCourante].pieces ? [...hangar[voitureCourante].pieces] : [];
@@ -781,32 +785,20 @@ function majAffichage() {
     }
 }
 
-document.getElementById("form-session").addEventListener("submit", function(e) {
+document.getElementById("form-voiture").addEventListener("submit", function(e) {
     e.preventDefault();
-    let dateParts = document.getElementById("date").value.split("-");
-    let dateFr = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+    const nom = document.getElementById("new-voiture-nom").value;
     
-    let nouvelleSession = {
-        date: dateFr,
-        evenement: document.getElementById("event").value,
-        circuit: document.getElementById("circuit").value,
-        duree: parseFloat(document.getElementById("duree").value),
-        notes: document.getElementById("notes").value
-    };
-
-    // Récupérer toutes les voitures cochées
-    let checkboxes = document.querySelectorAll('.check-voiture:checked');
-    if (checkboxes.length === 0) { alert("Sélectionnez au moins une voiture."); return; }
-
-    checkboxes.forEach(cb => {
-        let nomV = cb.value;
-        let hist = [...(hangar[nomV].historique || [])];
-        hist.unshift(nouvelleSession);
-        update(ref(db, `hangar/${nomV}`), { historique: hist });
+    // Ici, on utilise ton catalogue comme "moule" pour initialiser
+    const templatePieces = JSON.parse(JSON.stringify(cataloguePiecesStandard));
+    
+    set(ref(db, `hangar/${nom}`), {
+        pieces: templatePieces,
+        historique: []
+    }).then(() => {
+        alert("Voiture initialisée !");
+        document.getElementById("form-voiture").reset();
     });
-
-    document.getElementById("form-session").reset();
-    alert("Session ajoutée aux voitures sélectionnées.");
 });
     
 </script>
