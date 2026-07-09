@@ -546,12 +546,51 @@ function rafraichirCheckboxes() {
     };
 
     window.supprimerPiece = (id) => { if (confirm("Supprimer ?")) remove(ref(db, `hangar/${voitureCourante}/pieces/${id}`)); };
+    
+    window.supprimerVoiture = function() {
+    let select = document.getElementById("select-voiture");
+    let voitureASupprimer = select.value;
+    
+    if (!voitureASupprimer) return;
+    
+    if (confirm("Supprimer définitivement la voiture " + voitureASupprimer + " ?")) {
+        // Supprime de l'objet hangar
+        delete hangar[voitureASupprimer];
+        
+        // Supprime de Firebase (si tu utilises Firebase)
+        // db.ref('hangar/' + voitureASupprimer).remove(); 
+        
+        // Rafraîchit l'affichage
+        voitureCourante = Object.keys(hangar)[0] || "";
+        majAffichage();
+        rafraichirSelect(); // Assure-toi que cette fonction met à jour le menu déroulant
+    }
+};
 
     window.remplacerPiece = (id) => {
         const date = document.getElementById("date-input-" + id).value;
         if (!date) return;
         update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { heuresActuelles: 0, dernierChangement: date });
     };
+
+    window.annulerDateChangement = function(id) {
+    // 1. On vérifie que la pièce existe bien
+    if (hangar[voitureCourante] && hangar[voitureCourante].pieces[id]) {
+        
+        // 2. On supprime la donnée dans ton objet 'hangar'
+        hangar[voitureCourante].pieces[id].dernierChangement = "";
+        
+        // 3. On met à jour l'affichage pour que la date disparaisse visuellement
+        majAffichage();
+        
+        console.log("Date supprimée pour la pièce :", id);
+        
+        // Si tu utilises Firebase, c'est ici qu'il faut ajouter ta ligne de sauvegarde
+        // updateFirebase(); 
+    } else {
+        console.error("Impossible de trouver la pièce avec l'ID :", id);
+    }
+};
 
     window.supprimerCourse = function(index) {
         if (!confirm("Supprimer cette session ?")) return;
