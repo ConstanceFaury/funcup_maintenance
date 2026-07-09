@@ -280,11 +280,7 @@
 </head>
 <body>
 
-   <div style="margin: 20px 0; display: flex; gap: 10px;">
-        <button onclick="genererPDF('tout')" style="background-color: var(--moteur-color);">📄 PDF Liste Complète</button>
-        <button onclick="genererPDF('urgent')" style="background-color: var(--danger);">🚨 PDF Pièces à changer (Urgent)</button>
-    </div>
-
+   
 <div class="container">
       
     <header>
@@ -300,6 +296,11 @@
             <button class="btn-delete-car" onclick="supprimerVoitureCourante()">🗑️ Supprimer cette voiture</button>
         </div>
     </header>
+    
+<div style="margin: 20px 0; display: flex; gap: 10px;">
+        <button onclick="genererPDF('tout')" style="background-color: var(--moteur-color);">📄 PDF Liste Complète</button>
+        <button onclick="genererPDF('urgent')" style="background-color: var(--danger);">🚨 PDF Pièces à changer (Urgent)</button>
+    </div>
 
     <div class="grid-main">
         <div>
