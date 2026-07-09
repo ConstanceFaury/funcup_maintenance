@@ -306,10 +306,21 @@
         font-weight: 600;
 }
 
-        @media (max-width: 600px) {
-        header { flex-direction: column; text-align: center; }
-        .selector-box { width: 100%; text-align: center; }
-        .selector-box select { width: 100%; }
+       @media (max-width: 600px) {
+        header { 
+            display: flex !important;
+            flex-direction: column !important; 
+            text-align: center !important;
+            width: 100% !important;
+        }
+        .selector-box { 
+            width: 90% !important; 
+            margin: 0 auto !important; 
+            text-align: center !important; 
+        }
+        .selector-box select { 
+            width: 100% !important; 
+        }
     }
     </style>
 </head>
