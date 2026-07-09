@@ -731,32 +731,24 @@ function majAffichage() {
     }
 }
 
-document.getElementById("form-session").addEventListener("submit", function(e) {
+document.getElementById("form-voiture").addEventListener("submit", function(e) {
     e.preventDefault();
-    let dateParts = document.getElementById("date").value.split("-");
-    let dateFr = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+    let nomInput = document.getElementById("new-voiture-nom");
+    let nom = nomInput.value.trim();
     
-    let nouvelleSession = {
-        date: dateFr,
-        evenement: document.getElementById("event").value,
-        circuit: document.getElementById("circuit").value,
-        duree: parseFloat(document.getElementById("duree").value),
-        notes: document.getElementById("notes").value
+    if (!nom) return;
+    if (hangar[nom]) { alert("Cette voiture est déjà enregistrée !"); return; }
+    
+    let nouvelleVoiture = { 
+        pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)), 
+        historique: [] 
     };
-
-    // Récupérer toutes les voitures cochées
-    let checkboxes = document.querySelectorAll('.check-voiture:checked');
-    if (checkboxes.length === 0) { alert("Sélectionnez au moins une voiture."); return; }
-
-    checkboxes.forEach(cb => {
-        let nomV = cb.value;
-        let hist = [...(hangar[nomV].historique || [])];
-        hist.unshift(nouvelleSession);
-        update(ref(db, `hangar/${nomV}`), { historique: hist });
+    
+    set(ref(db, `hangar/${nom}`), nouvelleVoiture).then(() => { 
+        voitureCourante = nom; 
+        nomInput.value = ""; // Vide le champ proprement
+        alert("Voiture initialisée !");
     });
-
-    document.getElementById("form-session").reset();
-    alert("Session ajoutée aux voitures sélectionnées.");
 });
     
 </script>
