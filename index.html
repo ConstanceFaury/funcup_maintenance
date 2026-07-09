@@ -545,127 +545,140 @@
         }
     }
 
-    function majAffichage() {
-        if (!voitureCourante || !hangar[voitureCourante]) {
-            document.getElementById("maintenance-tables-container").innerHTML = "<p style='text-align:center;color:#999;'>Aucune voiture sélectionnée.</p>";
-            document.querySelector("#table-course tbody").innerHTML = "";
-            return;
-        }
+    // Fonction utilitaire à placer avant majAffichage
+function convertirEnDate(dateStr) {
+    if (!dateStr) return new Date(0);
+    const [d, m, y] = dateStr.split('/').map(Number);
+    return new Date(y, m - 1, d);
+}
 
-        document.getElementById("titre-voiture-alertes").textContent = voitureCourante;
-        document.getElementById("titre-voiture-historique").textContent = voitureCourante;
+function majAffichage() {
+    if (!voitureCourante || !hangar[voitureCourante]) {
+        document.getElementById("maintenance-tables-container").innerHTML = "<p style='text-align:center;color:#999;'>Aucune voiture sélectionnée.</p>";
+        document.querySelector("#table-course tbody").innerHTML = "";
+        return;
+    }
 
-        let donneesVoiture = hangar[voitureCourante];
-        let dateAujourdhui = obtenirDateDuJour();
+    document.getElementById("titre-voiture-alertes").textContent = voitureCourante;
+    document.getElementById("titre-voiture-historique").textContent = voitureCourante;
 
-        const container = document.getElementById("maintenance-tables-container");
-        container.innerHTML = "";
+    let donneesVoiture = hangar[voitureCourante];
+    let dateAujourdhui = obtenirDateDuJour();
 
-        const groupesAxe = [
-            { id: "Moteur", titre: "⚙️ Catégorie : Moteur", class: "cat-moteur", cles: ["Moteur"] },
-            { id: "Transmission", titre: "⛓️ Catégorie : Transmission", class: "cat-transmission", cles: ["Transmission"] },
-            { id: "Freins", titre: "🛑 Catégorie : Freins", class: "cat-freins", cles: ["Frein", "Freinage"] },
-            { id: "Train avant", titre: "🚘 Catégorie : Train Avant", class: "cat-train-avant", cles: ["Train avant"] },
-            { id: "Train arrière", titre: "🏎️ Catégorie : Train Arrière", class: "cat-train-arriere", cles: ["Train arrière"] }
-        ];
+    const container = document.getElementById("maintenance-tables-container");
+    container.innerHTML = "";
 
-        groupesAxe.forEach(groupe => {
-            let divGroupe = document.createElement("div");
-            divGroupe.className = `category-header ${groupe.class}`;
-            divGroupe.innerHTML = `<span>${groupe.titre}</span>`;
-            
-            let divTableWrapper = document.createElement("div");
-            divTableWrapper.style.overflowX = "auto";
-            
-            let table = document.createElement("table");
-            table.innerHTML = `
-                <thead>
-                    <tr>
-                        <th style="width: 35%;">Composant / Pièce</th>
-                        <th style="width: 15%;">Heures Actuelles</th>
-                        <th style="width: 12%;">Potentiel</th>
-                        <th style="width: 13%;">Marge Restante</th>
-                        <th style="width: 10%;">Statut</th>
-                        <th style="width: 15%;">Action Atelier</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            `;
-            
-            let tbody = table.querySelector("tbody");
-            let aDesPieces = false;
+    const groupesAxe = [
+        { id: "Moteur", titre: "⚙️ Catégorie : Moteur", class: "cat-moteur", cles: ["Moteur"] },
+        { id: "Transmission", titre: "⛓️ Catégorie : Transmission", class: "cat-transmission", cles: ["Transmission"] },
+        { id: "Freins", titre: "🛑 Catégorie : Freins", class: "cat-freins", cles: ["Frein", "Freinage"] },
+        { id: "Train avant", titre: "🚘 Catégorie : Train Avant", class: "cat-train-avant", cles: ["Train avant"] },
+        { id: "Train arrière", titre: "🏎️ Catégorie : Train Arrière", class: "cat-train-arriere", cles: ["Train arrière"] }
+    ];
 
-            if (donneesVoiture.pieces) {
-                donneesVoiture.pieces.forEach((piece, index) => {
-                    if (groupe.cles.includes(piece.cat)) {
-                        aDesPieces = true;
-                        let reste = piece.limite - piece.heuresActuelles;
-                        let statutClass = "status-ok";
-                        let statutTexte = "OK";
-
-                        if (reste <= 0) {
-                            statutClass = "status-danger";
-                            statutTexte = "Changement";
-                        } else if (reste <= 4) {
-                            statutClass = "status-warn";
-                            statutTexte = "À Prévoir";
-                        }
-
-                        let infoDate = piece.dernierChangement ? `Monté le : ${piece.dernierChangement}` : "Aucun historique date";
-
-                        let tr = document.createElement("tr");
-                        tr.innerHTML = `
-                            <td>
-                                <strong>${piece.nom}</strong>
-                                <span class="date-changement">${infoDate}</span>
-                            </td>
-                            <td>${piece.heuresActuelles.toFixed(2)} h</td>
-                            <td>${piece.limite} h</td>
-                            <td style="color: ${reste <= 4 ? 'var(--danger)' : 'inherit'}; font-weight: ${reste <= 4 ? 'bold' : 'normal'}">
-                                ${reste.toFixed(2)} h
-                            </td>
-                            <td><span class="status ${statutClass}">${statutTexte}</span></td>
-                            <td>
-                                <div class="action-cell">
-                                    <input type="date" id="date-change-${index}" class="table-date-input" value="${dateAujourdhui}">
-                                    <button class="btn-reset" onclick="remplacerPieceFormulaire(${index})">🛠️</button>
-                                    <button class="btn-cancel-date" onclick="annulerDateChangement(${index})" title="Effacer la date uniquement">❌</button>
-                                </div>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    }
-                });
-            }
-
-            if (aDesPieces) {
-                divTableWrapper.appendChild(table);
-                container.appendChild(divGroupe);
-                container.appendChild(divTableWrapper);
-            }
-        });
-
-        // Tableau de course
-        const tbodyCourse = document.querySelector("#table-course tbody");
-        tbodyCourse.innerHTML = "";
+    groupesAxe.forEach(groupe => {
+        let divGroupe = document.createElement("div");
+        divGroupe.className = `category-header ${groupe.class}`;
+        divGroupe.innerHTML = `<span>${groupe.titre}</span>`;
         
-        if (!donneesVoiture.historique || donneesVoiture.historique.length === 0) {
-            tbodyCourse.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#999; font-style:italic;">Aucune session de course enregistrée. Saisissez un roulage à gauche.</td></tr>`;
-        } else {
-            donneesVoiture.historique.forEach((session, index) => {
-                let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td><strong>${session.date}</strong></td>
-                    <td>${session.evenement}</td>
-                    <td>${session.circuit}</td>
-                    <td><strong style="color:var(--primary);">${session.duree.toFixed(2)} h</strong></td>
-                    <td><small>${session.notes ? session.notes : '<i>Aucune note</i>'}</small></td>
-                    <td><button class="btn-delete-row" onclick="supprimerCourse(${index})">🗑️ Supprimer</button></td>
-                `;
-                tbodyCourse.appendChild(tr);
+        let divTableWrapper = document.createElement("div");
+        divTableWrapper.style.overflowX = "auto";
+        
+        let table = document.createElement("table");
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Composant / Pièce</th>
+                    <th style="width: 15%;">Heures Actuelles</th>
+                    <th style="width: 12%;">Potentiel</th>
+                    <th style="width: 13%;">Marge Restante</th>
+                    <th style="width: 10%;">Statut</th>
+                    <th style="width: 15%;">Action Atelier</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
+        
+        let tbody = table.querySelector("tbody");
+        let aDesPieces = false;
+
+        if (donneesVoiture.pieces) {
+            donneesVoiture.pieces.forEach((piece, index) => {
+                if (groupe.cles.includes(piece.cat)) {
+                    aDesPieces = true;
+                    
+                    // --- CALCUL DYNAMIQUE ---
+                    const dateMontage = convertirEnDate(piece.dernierChangement);
+                    const heuresCalculees = (donneesVoiture.historique || [])
+                        .filter(session => convertirEnDate(session.date) >= dateMontage)
+                        .reduce((total, session) => total + session.duree, 0);
+
+                    let reste = piece.limite - heuresCalculees;
+                    let statutClass = "status-ok";
+                    let statutTexte = "OK";
+
+                    if (reste <= 0) {
+                        statutClass = "status-danger";
+                        statutTexte = "Changement";
+                    } else if (reste <= 4) {
+                        statutClass = "status-warn";
+                        statutTexte = "À Prévoir";
+                    }
+
+                    let infoDate = piece.dernierChangement ? `Monté le : ${piece.dernierChangement}` : "Aucun historique date";
+
+                    let tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>
+                            <strong>${piece.nom}</strong>
+                            <span class="date-changement">${infoDate}</span>
+                        </td>
+                        <td>${heuresCalculees.toFixed(2)} h</td>
+                        <td>${piece.limite} h</td>
+                        <td style="color: ${reste <= 4 ? 'var(--danger)' : 'inherit'}; font-weight: ${reste <= 4 ? 'bold' : 'normal'}">
+                            ${reste.toFixed(2)} h
+                        </td>
+                        <td><span class="status ${statutClass}">${statutTexte}</span></td>
+                        <td>
+                            <div class="action-cell">
+                                <input type="date" id="date-change-${index}" class="table-date-input" value="${dateAujourdhui}">
+                                <button class="btn-reset" onclick="remplacerPieceFormulaire(${index})">🛠️</button>
+                                <button class="btn-cancel-date" onclick="annulerDateChangement(${index})" title="Effacer la date uniquement">❌</button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                }
             });
         }
+
+        if (aDesPieces) {
+            divTableWrapper.appendChild(table);
+            container.appendChild(divGroupe);
+            container.appendChild(divTableWrapper);
+        }
+    });
+
+    const tbodyCourse = document.querySelector("#table-course tbody");
+    tbodyCourse.innerHTML = "";
+    
+    if (!donneesVoiture.historique || donneesVoiture.historique.length === 0) {
+        tbodyCourse.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#999; font-style:italic;">Aucune session de course enregistrée.</td></tr>`;
+    } else {
+        donneesVoiture.historique.forEach((session, index) => {
+            let tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><strong>${session.date}</strong></td>
+                <td>${session.evenement}</td>
+                <td>${session.circuit}</td>
+                <td><strong style="color:var(--primary);">${session.duree.toFixed(2)} h</strong></td>
+                <td><small>${session.notes ? session.notes : '<i>Aucune note</i>'}</small></td>
+                <td><button class="btn-delete-row" onclick="supprimerCourse(${index})">🗑️ Supprimer</button></td>
+            `;
+            tbodyCourse.appendChild(tr);
+        });
     }
+}
 
     document.getElementById("form-voiture").addEventListener("submit", function(e) {
         e.preventDefault();
