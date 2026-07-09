@@ -595,7 +595,15 @@ onValue(dbRef, (snapshot) => {
             });
         }
     }
-// Assure-toi que cette ligne est bien présente dans ton script
+
+window.supprimerPiece = function(index) {
+    if(confirm("Supprimer cette pièce définitivement ?")) {
+        let pieces = [...hangar[voitureCourante].pieces];
+        pieces.splice(index, 1);
+        update(ref(db, `hangar/${voitureCourante}`), { pieces: pieces });
+    }
+}
+
 window.ajouterPiecePourCategorie = function(categorieId) {
     const nomPiece = prompt(`Ajouter une pièce dans ${categorieId} :`);
     if (!nomPiece) return;
@@ -614,7 +622,6 @@ window.ajouterPiecePourCategorie = function(categorieId) {
     let piecesActuelles = hangar[voitureCourante].pieces ? [...hangar[voitureCourante].pieces] : [];
     piecesActuelles.push(nouvellePiece);
     
-    // Mise à jour vers Firebase
     update(ref(db, `hangar/${voitureCourante}`), { pieces: piecesActuelles });
 };
     // Fonction utilitaire à placer avant majAffichage
