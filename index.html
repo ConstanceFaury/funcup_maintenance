@@ -595,7 +595,28 @@ onValue(dbRef, (snapshot) => {
             });
         }
     }
+// Assure-toi que cette ligne est bien présente dans ton script
+window.ajouterPiecePourCategorie = function(categorieId) {
+    const nomPiece = prompt(`Ajouter une pièce dans ${categorieId} :`);
+    if (!nomPiece) return;
+    
+    const limite = parseFloat(prompt("Limite d'heures (ex: 100) :"));
+    if (isNaN(limite)) return;
 
+    const nouvellePiece = {
+        cat: categorieId,
+        nom: nomPiece,
+        heuresActuelles: 0,
+        limite: limite,
+        dernierChangement: ""
+    };
+
+    let piecesActuelles = hangar[voitureCourante].pieces ? [...hangar[voitureCourante].pieces] : [];
+    piecesActuelles.push(nouvellePiece);
+    
+    // Mise à jour vers Firebase
+    update(ref(db, `hangar/${voitureCourante}`), { pieces: piecesActuelles });
+};
     // Fonction utilitaire à placer avant majAffichage
 function convertirEnDate(dateStr) {
     if (!dateStr) return new Date(0);
