@@ -248,34 +248,28 @@
             font-size: 12px;
             display: none;
         }
-      /* Container des checkboxes */
-        #container-checkbox-voitures {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 10px;
-            background: #eee;
-            border-radius: 5px;
-        }
-        
-        /* On force chaque ligne à bien se comporter */
-        .checkbox-line {
-            display: flex !important; /* Force le flex */
-            flex-direction: row !important; /* Force l'alignement horizontal */
-            align-items: center; 
-            justify-content: space-between;
-            width: 100%;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-        }
-        
-        /* On annule le width: 100% pour les cases à cocher */
-        .checkbox-line input[type="checkbox"] {
-            width: auto !important;
-            margin: 0 !important;
-            display: inline-block !important;
-        }
+     /* Nettoyage total du conteneur */
+    .checkbox-row {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 8px !important;
+        border-bottom: 1px solid #ddd !important;
+    }
+    
+    /* On force la case à ne pas prendre 100% de la largeur */
+    .checkbox-row input[type="checkbox"] {
+        width: 20px !important;
+        height: 20px !important;
+        flex: 0 0 20px !important; /* Force la taille de la case */
+        margin: 0 !important;
+    }
+    
+    .checkbox-row span {
+        font-size: 14px;
+        font-weight: 600;
+}
     </style>
 </head>
 <body>
@@ -521,11 +515,12 @@ onValue(dbRef, (snapshot) => {
         const container = document.getElementById("container-checkbox-voitures");
         container.innerHTML = "";
         Object.keys(hangar).forEach(nomVoiture => {
+            // On crée un conteneur qui force l'alignement
             container.innerHTML += `
-                <label class="checkbox-line">
-                    ${nomVoiture}
+                <div class="checkbox-row">
+                    <span>${nomVoiture}</span>
                     <input type="checkbox" class="check-voiture" value="${nomVoiture}">
-                </label>
+                </div>
             `;
         });
     }
