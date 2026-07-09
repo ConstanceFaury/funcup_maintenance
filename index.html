@@ -5,65 +5,270 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fun Cup - Realtime Maintenance Expert</title>
     <style>
-       :root {
-    --primary: #e60000;
-    --dark: #121212;
-    --light: #f5f6fa;
-    --success: #2ecc71;
-    --warning: #e67e22;
-    --danger: #e74c3c;
-    --moteur-color: #2980b9;
-    --trans-color: #8e44ad;
-    --frein-color: #c0392b;
-    --train-av-color: #16a085;
-    --train-ar-color: #d35400;
-}
+        :root {
+            --primary: #e60000;
+            --dark: #121212;
+            --dark-card: #1e1e1e;
+            --light: #f5f6fa;
+            --border: #dddddd;
+            --success: #2ecc71;
+            --warning: #e67e22;
+            --danger: #e74c3c;
+            --moteur-color: #2980b9;
+            --trans-color: #8e44ad;
+            --frein-color: #c0392b;
+            --train-av-color: #16a085;
+            --train-ar-color: #d35400;
+        }
 
-body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--light); color: var(--dark); margin: 0; padding: 20px; }
-.container { max-width: 1400px; margin: 0 auto; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
+        }
 
-/* Titres */
-.main-title { font-size: 32px; font-style: italic; color: white; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1px; }
-.main-title .orange { color: var(--primary); }
-.subtitle { margin: 0; color: #6c757d; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+       
+        .main-title {
+            font-size: 32px;
+            font-style: italic;
+            color: white;
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Couleur orange spécifique pour le 4 */
+        .main-title .orange {
+            color: #e60000; /* Remplace par le code orange exact si nécessaire */
+        }
+        
+        /* Style pour le sous-titre */
+        .subtitle {
+            margin: 0;
+            color: #6c757d; /* Gris pour le sous-titre */
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-/* Header & Selector */
-header { background-color: var(--dark); color: white; padding: 25px; border-radius: 10px; margin-bottom: 25px; border-left: 6px solid var(--primary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-.selector-box { background: #252525; padding: 12px 20px; border-radius: 8px; border: 1px solid #333; text-align: right; }
-.selector-box label { color: #fff; font-size: 12px; text-transform: uppercase; }
-.selector-box select { width: 220px; padding: 8px; margin-top: 5px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        header {
+            background-color: var(--dark);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 6px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
 
-/* Grille et Cartes */
-.grid-main { display: grid; grid-template-columns: 350px 1fr; gap: 25px; }
-.card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; }
-.card h2 { margin: 0 0 20px 0; font-size: 18px; border-bottom: 2px solid var(--light); padding-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        header h1 { margin: 0 0 5px 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
+        header p { margin: 0; color: #aaa; font-size: 14px; }
 
-/* Formulaires et Boutons */
-.form-group { margin-bottom: 15px; }
-label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; }
-input, select, textarea { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
-button { background-color: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; text-transform: uppercase; }
-button.secondary { background-color: #444; }
-button.btn-delete-car { background-color: var(--danger); padding: 5px 10px; font-size: 11px; width: 100%; margin-top: 5px; }
+        .selector-box {
+            background: #252525;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            text-align: right;
+        }
 
-/* Checkbox Row (Alignement) */
-.checkbox-row { display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: center !important; padding: 8px !important; border-bottom: 1px solid #ddd !important; }
-.checkbox-row input[type="checkbox"] { width: 20px !important; height: 20px !important; flex: 0 0 20px !important; margin: 0 !important; }
+        .selector-box label { color: #fff; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .selector-box select {
+            width: 220px;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 15px;
+            background: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
-/* Tableaux */
-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-th, td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 13px; }
-th { background-color: #fafafa; text-transform: uppercase; font-size: 11px; }
+        .grid-main {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 25px;
+        }
 
-/* RESPONSIVE MOBILE (UN SEUL BLOC) */
-@media (max-width: 768px) {
-    body { padding: 10px; }
-    .grid-main { grid-template-columns: 1fr; }
-    header { padding: 15px; text-align: center; justify-content: center; }
-    .selector-box { text-align: center; width: 100%; }
-    .selector-box select { width: 100%; }
-    button { padding: 15px !important; font-size: 16px !important; }
-    th, td { padding: 8px 4px; font-size: 11px; }
+        @media (max-width: 1024px) {
+            .grid-main { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+
+        .card h2 { 
+            margin: 0 0 20px 0; 
+            font-size: 18px; 
+            font-weight: 700;
+            border-bottom: 2px solid var(--light);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-header {
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 25px 0 10px 0;
+            padding: 8px 12px;
+            color: white;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .cat-moteur { background-color: var(--moteur-color); }
+        .cat-transmission { background-color: var(--trans-color); }
+        .cat-freins { background-color: var(--frein-color); }
+        .cat-train-avant { background-color: var(--train-av-color); }
+        .cat-train-arriere { background-color: var(--train-ar-color); }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        th { 
+            background-color: #fafafa; 
+            font-weight: 600; 
+            color: #666;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        tr:hover td { background-color: #f9f9f9; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #444; }
+        input, select, textarea {
+            width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; font-size: 14px;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; }
+
+        .table-date-input {
+            width: 120px;
+            padding: 4px;
+            font-size: 11px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 5px;
+            display: inline-block;
+        }
+
+        button {
+            background-color: var(--primary); color: white; border: none; padding: 12px 20px;
+            border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.2s;
+            width: 100%; text-transform: uppercase;
+        }
+        button:hover { background-color: #cc0000; }
+        button.secondary { background-color: #444; }
+        button.secondary:hover { background-color: #222; }
+        
+        button.btn-reset {
+            background-color: #555; padding: 5px 10px; font-size: 11px; width: auto; border-radius: 3px;
+            display: inline-block; text-transform: none; margin-right: 2px;
+        }
+        button.btn-reset:hover { background-color: var(--success); }
+        
+        button.btn-cancel-date {
+            background-color: #7f8c8d; padding: 5px 8px; font-size: 11px; width: auto; border-radius: 3px;
+            display: inline-block; text-transform: none;
+        }
+        button.btn-cancel-date:hover { background-color: #c0392b; }
+
+        button.btn-delete-row {
+            background-color: #e74c3c; padding: 4px 8px; font-size: 11px; width: auto; border-radius: 4px;
+            text-transform: none; font-weight: normal;
+        }
+        button.btn-delete-row:hover { background-color: #c0392b; }
+
+        button.btn-delete-car {
+            background-color: #c0392b; padding: 5px 10px; font-size: 11px; width: 100%; border-radius: 4px;
+            text-transform: uppercase; font-weight: bold; margin-top: 5px;
+        }
+        button.btn-delete-car:hover { background-color: #962d22; }
+
+        .status {
+            padding: 3px 6px; border-radius: 4px; color: white; font-weight: bold; display: inline-block; font-size: 10px; text-transform: uppercase;
+            text-align: center; width: 80px;
+        }
+        .status-ok { background-color: var(--success); }
+        .status-warn { background-color: var(--warning); }
+        .status-danger { background-color: var(--danger); }
+
+        .badge-voiture {
+            background-color: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 14px; margin-left: auto;
+        }
+
+        .date-changement {
+            font-size: 11px;
+            color: #777;
+            display: block;
+            margin-top: 2px;
+            font-style: italic;
+        }
+
+        .action-cell {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        #loading-sync {
+            background-color: #2ecc71;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: none;
+        }
+     /* Nettoyage total du conteneur */
+    .checkbox-row {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 8px !important;
+        border-bottom: 1px solid #ddd !important;
+    }
+    
+    /* On force la case à ne pas prendre 100% de la largeur */
+    .checkbox-row input[type="checkbox"] {
+        width: 20px !important;
+        height: 20px !important;
+        flex: 0 0 20px !important; /* Force la taille de la case */
+        margin: 0 !important;
+    }
+    
+    .checkbox-row span {
+        font-size: 14px;
+        font-weight: 600;
 }
     </style>
 </head>
@@ -96,7 +301,7 @@ th { background-color: #fafafa; text-transform: uppercase; font-size: 11px; }
                     </div>
                     <button type="submit" class="secondary">Initialiser au Catalogue</button>
                 </form>
-                </div>
+            </div>
 
             <div class="card">
                 <h2>⏱️ Nouveau Roulage</h2>
@@ -242,29 +447,55 @@ th { background-color: #fafafa; text-transform: uppercase; font-size: 11px; }
     }
 
     const dbRef = ref(db, 'hangar');
-    
 onValue(dbRef, (snapshot) => {
     const data = snapshot.val();
-    if (!data) return; // Si pas de donnée, on arrête
     
-    hangar = data;
+    // Feedback visuel de synchro
+    const syncBadge = document.getElementById("loading-sync");
+    syncBadge.style.display = "inline-block";
+    setTimeout(() => { syncBadge.style.display = "none"; }, 1500);
+
+    if (data) {
+        hangar = data;
+        
+        // --- Recalibrage forcé ---
+        Object.keys(hangar).forEach(nomVoiture => {
+            let piecesEnBase = hangar[nomVoiture].pieces || [];
+            // Si la structure des pièces a changé, on nettoie
+            if (piecesEnBase.length !== cataloguePiecesStandard.length) {
+                let piecesNettoyees = cataloguePiecesStandard.map(pieceStandard => {
+                    let correspondance = piecesEnBase.find(p => p.nom === pieceStandard.nom);
+                    return correspondance ? correspondance : JSON.parse(JSON.stringify(pieceStandard));
+                });
+                hangar[nomVoiture].pieces = piecesNettoyees;
+                update(ref(db, `hangar/${nomVoiture}`), { pieces: piecesNettoyees });
+            }
+        });
+
+        // Maintien de la voiture courante (si elle a été supprimée, on prend la première dispo)
+        if (!voitureCourante || !hangar[voitureCourante]) {
+            voitureCourante = Object.keys(hangar)[0] || "";
+        }
+    } else {
+        // Initialisation si base vide
+        hangar = {
+            "Voiture Châssis de démo": {
+                pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)),
+                historique: []
+            }
+        };
+        set(ref(db, 'hangar'), hangar);
+        voitureCourante = "Voiture Châssis de démo";
+    }
     
-    // 1. Mise à jour de l'interface
+    // Mise à jour de toute l'interface
     rafraichirSelecteur();
     
-    // 2. Génération des checkboxes (on force ici)
-    const container = document.getElementById("container-checkbox-voitures");
-    container.innerHTML = ""; // On vide avant de remplir
+    // Si tu as ajouté la fonction pour les checkboxes :
+    if (typeof rafraichirCheckboxes === 'function') {
+        rafraichirCheckboxes();
+    }
     
-    Object.keys(hangar).forEach(nomVoiture => {
-        container.innerHTML += `
-            <div class="checkbox-row">
-                <span>${nomVoiture}</span>
-                <input type="checkbox" class="check-voiture" value="${nomVoiture}">
-            </div>
-        `;
-    });
-
     majAffichage();
 });
 
@@ -280,19 +511,19 @@ onValue(dbRef, (snapshot) => {
         });
     }
 
-function rafraichirCheckboxes() {
-    const container = document.getElementById("container-checkbox-voitures");
-    if (!container) return; // Sécurité au cas où le div n'existe pas
-    container.innerHTML = "";
-    Object.keys(hangar).forEach(nomVoiture => {
-        container.innerHTML += `
-            <div class="checkbox-row">
-                <span>${nomVoiture}</span>
-                <input type="checkbox" class="check-voiture" value="${nomVoiture}">
-            </div>
-        `;
-    });
-}
+    function rafraichirCheckboxes() {
+        const container = document.getElementById("container-checkbox-voitures");
+        container.innerHTML = "";
+        Object.keys(hangar).forEach(nomVoiture => {
+            // On crée un conteneur qui force l'alignement
+            container.innerHTML += `
+                <div class="checkbox-row">
+                    <span>${nomVoiture}</span>
+                    <input type="checkbox" class="check-voiture" value="${nomVoiture}">
+                </div>
+            `;
+        });
+    }
 
     window.changerVoitureCourante = function() {
         voitureCourante = document.getElementById("select-voiture").value;
@@ -502,13 +733,7 @@ function majAffichage() {
 
 document.getElementById("form-session").addEventListener("submit", function(e) {
     e.preventDefault();
-    console.log("1. Clic sur Enregistrer détecté");
-
-    // Récupération des valeurs
-    let dateInput = document.getElementById("date").value;
-    if (!dateInput) { console.error("Erreur : La date est vide"); return; }
-    
-    let dateParts = dateInput.split("-");
+    let dateParts = document.getElementById("date").value.split("-");
     let dateFr = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
     
     let nouvelleSession = {
@@ -519,33 +744,19 @@ document.getElementById("form-session").addEventListener("submit", function(e) {
         notes: document.getElementById("notes").value
     };
 
-    // 3. Récupérer toutes les voitures cochées
+    // Récupérer toutes les voitures cochées
     let checkboxes = document.querySelectorAll('.check-voiture:checked');
-    console.log("2. Nombre de voitures sélectionnées :", checkboxes.length);
-    
-    if (checkboxes.length === 0) {
-        alert("Sélectionnez au moins une voiture.");
-        return;
-    }
+    if (checkboxes.length === 0) { alert("Sélectionnez au moins une voiture."); return; }
 
-    // 4. Boucle de mise à jour
     checkboxes.forEach(cb => {
         let nomV = cb.value;
-        console.log("3. Tentative de mise à jour pour :", nomV);
-        
-        if (hangar[nomV]) {
-            let hist = Array.isArray(hangar[nomV].historique) ? [...hangar[nomV].historique] : [];
-            hist.unshift(nouvelleSession);
-            
-            update(ref(db, `hangar/${nomV}`), { historique: hist })
-                .then(() => console.log("4. Succès Firebase pour", nomV))
-                .catch((err) => console.error("5. ERREUR Firebase pour", nomV, err));
-        } else {
-            console.error("Erreur : La voiture", nomV, "n'existe pas dans l'objet hangar");
-        }
+        let hist = [...(hangar[nomV].historique || [])];
+        hist.unshift(nouvelleSession);
+        update(ref(db, `hangar/${nomV}`), { historique: hist });
     });
 
     document.getElementById("form-session").reset();
+    alert("Session ajoutée aux voitures sélectionnées.");
 });
     
 </script>
