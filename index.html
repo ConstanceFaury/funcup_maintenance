@@ -731,26 +731,50 @@ function majAffichage() {
     }
 }
 
-document.getElementById("form-voiture").addEventListener("submit", function(e) {
+document.getElementById("form-session").addEventListener("submit", function(e) {
     e.preventDefault();
-    let nomInput = document.getElementById("new-voiture-nom");
-    let nom = nomInput.value.trim();
     
-    if (!nom) return;
-    if (hangar[nom]) { alert("Cette voiture est déjà enregistrée !"); return; }
+    // 1. Récupérer la date
+    let dateParts = document.getElementById("date").value.split("-");
+    let dateFr = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
     
-    let nouvelleVoiture = { 
-        pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)), 
-        historique: [] 
+    // 2. Créer l'objet session
+    let nouvelleSession = {
+        date: dateFr,
+        evenement: document.getElementById("event").value,
+        circuit: document.getElementById("circuit").value,
+        duree: parseFloat(document.getElementById("duree").value),
+        notes: document.getElementById("notes").value
     };
-    
-    set(ref(db, `hangar/${nom}`), nouvelleVoiture).then(() => { 
-        voitureCourante = nom; 
-        nomInput.value = ""; // Vide le champ proprement
-        alert("Voiture initialisée !");
+
+    // 3. Récupérer TOUTES les voitures cochées
+    let checkboxes = document.querySelectorAll('.check-voiture:checked');
+    if (checkboxes.length === 0) {
+        alert("Veuillez cocher au moins une voiture dans la liste !");
+        return;
+    }
+
+    // 4. Mettre à jour chaque voiture sélectionnée dans Firebase
+    let misesAJour = [];
+    checkboxes.forEach(cb => {
+        let nomV = cb.value;
+        if (hangar[nomV]) {
+            let hist = [...(hangar[nomV].historique || [])];
+            hist.unshift(nouvelleSession); // Ajoute la nouvelle session en haut de liste
+            
+            // On prépare la mise à jour pour cette voiture
+            misesAJour.push(update(ref(db, `hangar/${nomV}`), { historique: hist }));
+        }
+    });
+
+    // 5. Une fois que toutes les voitures sont mises à jour
+    Promise.all(misesAJour).then(() => {
+        document.getElementById("form-session").reset();
+        alert("Session enregistrée pour les voitures sélectionnées.");
+        // Pas besoin d'appeler majAffichage() manuellement, 
+        // le onValue() en haut de ton code le fera tout seul !
     });
 });
-    
 </script>
 
 </body>
