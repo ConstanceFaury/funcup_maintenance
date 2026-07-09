@@ -595,8 +595,30 @@ onValue(dbRef, (snapshot) => {
             });
         }
     }
+   window.ajouterPiecePourCategorie = function(categorieId) {
+    const nomPiece = prompt(`Ajouter une pièce dans ${categorieId} :`);
+    if (!nomPiece) return;
+    
+    const limite = parseFloat(prompt("Limite d'heures (ex: 100) :"));
+    if (isNaN(limite)) return;
 
-    // Fonction utilitaire à placer avant majAffichage
+    // Création de la nouvelle pièce
+    const nouvellePiece = {
+        cat: categorieId,
+        nom: nomPiece,
+        heuresActuelles: 0,
+        limite: limite,
+        dernierChangement: ""
+    };
+
+    // Mise à jour dans Firebase
+    let piecesActuelles = hangar[voitureCourante].pieces ? [...hangar[voitureCourante].pieces] : [];
+    piecesActuelles.push(nouvellePiece);
+    
+    update(ref(db, `hangar/${voitureCourante}`), { pieces: piecesActuelles });
+};
+    
+// Fonction utilitaire à placer avant majAffichage
 function convertirEnDate(dateStr) {
     if (!dateStr) return new Date(0);
     const [d, m, y] = dateStr.split('/').map(Number);
@@ -630,7 +652,10 @@ function majAffichage() {
     groupesAxe.forEach(groupe => {
         let divGroupe = document.createElement("div");
         divGroupe.className = `category-header ${groupe.class}`;
-        divGroupe.innerHTML = `<span>${groupe.titre}</span>`;
+        divGroupe.innerHTML = `
+            <span>${groupe.titre}</span>
+            <button onclick="ajouterPiecePourCategorie('${groupe.id}')" style="background:white; color:${groupe.class}; border:none; padding:2px 8px; border-radius:3px; cursor:pointer; font-size:12px;">+ Ajouter</button>
+        `;
         
         let divTableWrapper = document.createElement("div");
         divTableWrapper.style.overflowX = "auto";
@@ -652,6 +677,7 @@ function majAffichage() {
         
         let tbody = table.querySelector("tbody");
         let aDesPieces = false;
+        
 
         if (donneesVoiture.pieces) {
             donneesVoiture.pieces.forEach((piece, index) => {
