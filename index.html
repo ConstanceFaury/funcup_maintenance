@@ -248,6 +248,21 @@
             font-size: 12px;
             display: none;
         }
+                /* Container des checkboxes */
+        #container-checkbox-voitures {
+            display: flex;
+            flex-direction: column;
+            gap: 8px; /* Espace entre chaque ligne */
+        }
+        
+        /* Chaque ligne (label) */
+        .checkbox-line {
+            display: flex;
+            align-items: center; /* Aligne verticalement la case et le texte */
+            justify-content: space-between; /* Espace le texte à gauche et la case à droite */
+            padding: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -306,8 +321,8 @@
                     </div>
                     <div class="form-group">
                         <label>Voitures présentes :</label>
-                        <div id="container-checkbox-voitures" style="background:#eee; padding:10px; border-radius:5px;">
-                            </div>
+                       <div id="container-checkbox-voitures" style="background:#eee; padding:10px; border-radius:5px;">
+                        </div>
                     </div>
                     <button type="submit">Enregistrer le roulage</button>
                 </form>
