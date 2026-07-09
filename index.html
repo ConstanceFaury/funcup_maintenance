@@ -680,32 +680,25 @@ function majAffichage() {
     }
 }
 
-    document.getElementById("form-voiture").addEventListener("submit", function(e) {
-        e.preventDefault();
-        let nom = document.getElementById("new-voiture-nom").value.trim();
-        if (hangar[nom]) { alert("Cette voiture est déjà enregistrée !"); return; }
-        let nouvelleVoiture = { pieces: JSON.parse(JSON.stringify(cataloguePiecesStandard)), historique: [] };
-        set(ref(db, `hangar/${nom}`), nouvelleVoiture).then(() => { voitureCourante = nom; document.getElementById("form-voiture").reset(); });
-    });
-
     document.getElementById("form-session").addEventListener("submit", function(e) {
         e.preventDefault();
-        if (!voitureCourante) return;
-        let dateInput = document.getElementById("date").value;
-        let event = document.getElementById("event").value;
-        let circuit = document.getElementById("circuit").value;
-        let duree = parseFloat(document.getElementById("duree").value);
-        let notes = document.getElementById("notes").value;
-
-        let dateParts = dateInput.split("-");
+        let dateParts = document.getElementById("date").value.split("-");
         let dateFr = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+        
+        let nouvelleSession = {
+            date: dateFr,
+            evenement: document.getElementById("event").value,
+            circuit: document.getElementById("circuit").value,
+            duree: parseFloat(document.getElementById("duree").value),
+            notes: document.getElementById("notes").value
+        };
 
-        let historiqueMaj = hangar[voitureCourante].historique || [];
-        historiqueMaj.unshift({ date: dateFr, evenement: event, circuit: circuit, duree: duree, notes: notes });
-
-        let piecesMaj = hangar[voitureCourante].pieces.map(piece => { piece.heuresActuelles += duree; return piece; });
-
-        update(ref(db, `hangar/${voitureCourante}`), { historique: historiqueMaj, pieces: piecesMaj }).then(() => { document.getElementById("form-session").reset(); });
+        let hist = hangar[voitureCourante].historique || [];
+        hist.unshift(nouvelleSession);
+        // ICI : on ne touche PLUS aux pièces, juste à l'historique
+        update(ref(db, `hangar/${voitureCourante}`), { historique: hist }).then(() => {
+            document.getElementById("form-session").reset();
+        });
     });
 </script>
 
