@@ -468,10 +468,11 @@
         });
     }
     
-    function rafraichirCheckboxes() {
+function rafraichirCheckboxes() {
         const container = document.getElementById("container-checkbox-voitures");
-        if (!container) return; // Sécurité si l'élément n'existe pas encore
-        container.innerHTML = "";
+        if (!container) return; // Sécurité si la div n'existe pas
+        
+        container.innerHTML = ""; // Vide le contenu actuel
         Object.keys(hangar).forEach(nomVoiture => {
             container.innerHTML += `
                 <div class="checkbox-row">
@@ -480,7 +481,7 @@
                 </div>
             `;
         });
-}
+    }
 
     window.changerVoitureCourante = () => { voitureCourante = document.getElementById("select-voiture").value; majAffichage(); };
 
