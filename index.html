@@ -737,7 +737,9 @@ groupes.forEach(g => {
 }
     
     
-    document.getElementById("form-session").addEventListener("submit", (e) => {
+   import { get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"; // Importe 'get' et 'child'
+
+document.getElementById("form-session").addEventListener("submit", async (e) => {
     e.preventDefault();
     const date = document.getElementById("date").value;
     const evenement = document.getElementById("event").value;
@@ -748,18 +750,22 @@ groupes.forEach(g => {
 
     if (checkboxes.length === 0) { alert("Veuillez sélectionner au moins une voiture."); return; }
 
-    checkboxes.forEach(cb => {
+    // Utilisation d'une boucle asynchrone pour traiter chaque voiture proprement
+    for (const cb of checkboxes) {
         const nomVoiture = cb.value;
         const refHistorique = ref(db, `hangar/${nomVoiture}/historique`);
         
-        // Récupérer l'historique actuel pour le mettre à jour
-        onValue(ref(db, `hangar/${nomVoiture}/historique`), (snapshot) => {
+        try {
+            const snapshot = await get(refHistorique);
             let hist = snapshot.val() || [];
             hist.push({ date, evenement, circuit, duree, notes });
-            update(ref(db, `hangar/${nomVoiture}`), { historique: hist });
-        }, { onlyOnce: true });
-    });
-    alert("Sessions enregistrées !");
-});
+            await update(ref(db, `hangar/${nomVoiture}`), { historique: hist });
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour pour " + nomVoiture, error);
+        }
+    }
     
+    alert("Sessions enregistrées !");
+    document.getElementById("form-session").reset(); // Vide le formulaire après l'envoi
+});
 </script>
