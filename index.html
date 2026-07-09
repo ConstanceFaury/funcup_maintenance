@@ -748,46 +748,34 @@ groupes.forEach(g => {
     
     
    import { get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"; // Importe 'get' et 'child'
-    import { getDatabase, ref, set, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // 2. Configuration Firebase
-document.getElementById("form-voiture").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const nomVoiture = document.getElementById("new-voiture-nom").value.trim();
+document.getElementById("form-session").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const date = document.getElementById("date").value;
+    const evenement = document.getElementById("event").value;
+    const circuit = document.getElementById("circuit").value;
+    const duree = parseFloat(document.getElementById("duree").value);
+    const notes = document.getElementById("notes").value;
+    const checkboxes = document.querySelectorAll(".check-voiture:checked");
+
+    if (checkboxes.length === 0) { alert("Veuillez sélectionner au moins une voiture."); return; }
+
+    // Utilisation d'une boucle asynchrone pour traiter chaque voiture proprement
+    for (const cb of checkboxes) {
+        const nomVoiture = cb.value;
+        const refHistorique = ref(db, `hangar/${nomVoiture}/historique`);
         
-        if (!nomVoiture) return;
-
-        set(ref(db, `hangar/${nomVoiture}`), {
-            historique: [{ date: "2026-01-01", evenement: "Initialisation", circuit: "N/A", duree: 0, notes: "Création châssis" }],
-            pieces: {} 
-        }).then(() => {
-            alert("Châssis " + nomVoiture + " ajouté !");
-            document.getElementById("new-voiture-nom").value = "";
-        }).catch((error) => console.error(error));
-    });
-
-    // 4. ÉCOUTEUR POUR SESSION (form-session)
-    document.getElementById("form-session").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const date = document.getElementById("date").value;
-        const evenement = document.getElementById("event").value;
-        const circuit = document.getElementById("circuit").value;
-        const duree = parseFloat(document.getElementById("duree").value);
-        const notes = document.getElementById("notes").value;
-        const checkboxes = document.querySelectorAll(".check-voiture:checked");
-
-        if (checkboxes.length === 0) { alert("Sélectionnez au moins une voiture."); return; }
-
-        for (const cb of checkboxes) {
-            const nomVoiture = cb.value;
-            const refHistorique = ref(db, `hangar/${nomVoiture}/historique`);
+        try {
             const snapshot = await get(refHistorique);
             let hist = snapshot.val() || [];
             hist.push({ date, evenement, circuit, duree, notes });
             await update(ref(db, `hangar/${nomVoiture}`), { historique: hist });
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour pour " + nomVoiture, error);
         }
-        alert("Sessions enregistrées !");
-        document.getElementById("form-session").reset();
-    });
+    }
     
+    alert("Sessions enregistrées !");
+    document.getElementById("form-session").reset(); // Vide le formulaire après l'envoi
+});
 </script>
