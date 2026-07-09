@@ -54,6 +54,13 @@
             letter-spacing: 0.5px;
         }
 
+          @media (max-width: 768px) {
+        body { padding: 10px; }
+        
+        .grid-main { 
+            grid-template-columns: 1fr; /* Passage sur une seule colonne */
+        }
+
         header {
             background-color: var(--dark);
             color: white;
@@ -110,12 +117,6 @@
         text-align: center;
     }
 
-      @media (max-width: 768px) {
-        body { padding: 10px; }
-        
-        .grid-main { 
-            grid-template-columns: 1fr; /* Passage sur une seule colonne */
-        }
         
     .selector-box { text-align: center; }
     .selector-box select { width: 100%; }
