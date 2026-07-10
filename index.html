@@ -669,6 +669,8 @@ function convertirEnDate(dateStr) {
         { id: "Train arrière", titre: "🏎️ CATÉGORIE : TRAIN ARRIÈRE", class: "cat-train-arriere", cles: ["Train arrière"] }
     ];
 
+        console.log("Données de la voiture actuelle :", hangar[voitureCourante]);
+
 groupes.forEach(g => {
     let div = document.createElement("div");
     // On s'assure que la classe est bien appliquée
@@ -688,7 +690,7 @@ groupes.forEach(g => {
                     // Dans la boucle de majAffichage :
                     let dateMontage = convertirEnDate(p.dernierChangement);
                     let heuresCumulees = (hangar[voitureCourante].historique || [])
-                        .filter(s => convertirEnDate(s.date) >= dateMontage) // La comparaison est maintenant juste
+                      //  .filter(s => convertirEnDate(s.date) >= dateMontage) // La comparaison est maintenant juste
                         .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
                     
                     // On met à jour la valeur réelle dans la pièce pour le calcul de marge
