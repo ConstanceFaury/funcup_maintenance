@@ -567,19 +567,11 @@ function rafraichirCheckboxes() {
         });
     };
 
-  window.remplacerPiece = (id) => {
-    const rawDate = document.getElementById("date-input-" + id).value; 
-    if (!rawDate) return;
-    
-    // Conversion forcée en format français avant envoi
-    const [y, m, d] = rawDate.split('-');
-    const dateFr = `${d}/${m}/${y}`;
-    
-    update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { 
-        heuresActuelles: 0, 
-        dernierChangement: dateFr 
-    });
-};
+    window.remplacerPiece = (id) => {
+        const date = document.getElementById("date-input-" + id).value;
+        if (!date) return;
+        update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { heuresActuelles: 0, dernierChangement: date });
+    };
 
     window.supprimerCourse = function(index) {
         if (!confirm("Supprimer cette session ?")) return;
@@ -636,24 +628,12 @@ function rafraichirCheckboxes() {
     });
 };
 
-function convertirEnDate(dateStr) {
-    if (!dateStr) return new Date(0);
-
-    // Vérifie si la date est au format ISO (aaaa-mm-jj) avec des tirets
-    if (dateStr.includes('-')) {
-        const [y, m, d] = dateStr.split('-');
-        return new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
-    }
-    
-    // Vérifie si la date est au format FR (jj/mm/aaaa) avec des slashs
-    if (dateStr.includes('/')) {
-        const [d, m, y] = dateStr.split('/');
-        return new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
-    }
-
-    return new Date(0);
+    function convertirEnDate(dateStr) {
+    if (!dateStr) return new Date(0); // Si pas de date, on considère que c'est le début des temps
+    const [d, m, y] = dateStr.split('/').map(Number);
+    return new Date(y, m - 1, d);
 }
-    
+
     function majAffichage() {
         if (!voitureCourante || !hangar[voitureCourante]) return;
         document.getElementById("titre-voiture-alertes").textContent = voitureCourante;
@@ -668,8 +648,6 @@ function convertirEnDate(dateStr) {
         { id: "Train avant", titre: "🚘 CATÉGORIE : TRAIN AVANT", class: "cat-train-avant", cles: ["Train avant"] },
         { id: "Train arrière", titre: "🏎️ CATÉGORIE : TRAIN ARRIÈRE", class: "cat-train-arriere", cles: ["Train arrière"] }
     ];
-
-        console.log("Données de la voiture actuelle :", hangar[voitureCourante]);
 
 groupes.forEach(g => {
     let div = document.createElement("div");
@@ -687,36 +665,35 @@ groupes.forEach(g => {
              Object.entries(hangar[voitureCourante].pieces).forEach(([id, p]) => {
                 if (g.cles.includes(p.cat)) {
                     // --- NOUVEAU : CALCUL DES HEURES BASÉ SUR LA DATE ---
-                    // Dans la boucle de majAffichage :
-                    let dateMontage = convertirEnDate(p.dernierChangement);
-                    let heuresCumulees = (hangar[voitureCourante].historique || [])
-                      //  .filter(s => convertirEnDate(s.date) >= dateMontage) // La comparaison est maintenant juste
-                        .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
-                    
-                    // On met à jour la valeur réelle dans la pièce pour le calcul de marge
-                    let margeRestante = p.limite - heuresCalculees;
-                    let statutTexte = margeRestante <= 0 ? 'Changement' : 'OK';
-                    let statutClass = margeRestante <= 0 ? 'status-danger' : 'status-ok';
+                    l// Calcul des heures depuis le dernier changement
+                        let dateMontage = convertirEnDate(p.dernierChangement);
+                        let heuresCumulees = (hangar[voitureCourante].historique || [])
+                            .filter(s => convertirEnDate(s.date) >= dateMontage)
+                            .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
+                        
+                        // Marge = Limite - Heures cumulées
+                        let margeRestante = p.limite - heuresCumulees;
+                        
+                        // Définition du statut visuel
+                        let statutTexte = margeRestante <= 0 ? 'À CHANGER' : 'OK';
+                        let statutClass = margeRestante <= 0 ? 'status-danger' : 'status-ok';
             
                     let tr = document.createElement("tr");
                     tr.innerHTML = `
-                        <td>
-                            <strong>${p.nom}</strong>
-                            <span class="date-changement">${p.dernierChangement ? 'Montée le : ' + p.dernierChangement : 'Aucune historique date'}</span>
-                        </td>
-                        <td>${heuresCalculees.toFixed(2)} h</td>
-                        <td>${p.limite} h</td>
-                        <td>${margeRestante.toFixed(2)} h</td>
-                        <td><span class="status ${statutClass}">${statutTexte}</span></td>
-                        <td>
-                            <div class="action-cell">
-                                <input type="date" id="date-input-${id}" class="table-date-input">
-                                <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
-                                <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
-                                <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
-                            </div>
-                        </td>
-                    `;
+                            <td>
+                                <strong>${p.nom}</strong>
+                                <span class="date-changement">${p.dernierChangement ? 'Montée le : ' + p.dernierChangement : 'Aucune date'}</span>
+                            </td>
+                            <td>${heuresCumulees.toFixed(2)} h</td> <td>${p.limite} h</td>               <td>${margeRestante.toFixed(2)} h</td>  <td><span class="status ${statutClass}">${statutTexte}</span></td>
+                            <td>
+                                <div class="action-cell">
+                                    <input type="date" id="date-input-${id}" class="table-date-input">
+                                    <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
+                                    <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
+                                    <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
+                                </div>
+                            </td>
+                        `;
                     tbody.appendChild(tr);
                     }
                 });
@@ -780,43 +757,33 @@ groupes.forEach(g => {
         });
     });
         
-   document.getElementById("form-session").addEventListener("submit", async (e) => {
-    e.preventDefault();
+    document.getElementById("form-session").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const date = document.getElementById("date").value;
+        const evenement = document.getElementById("event").value;
+        const circuit = document.getElementById("circuit").value;
+        const duree = parseFloat(document.getElementById("duree").value);
+        const notes = document.getElementById("notes").value;
+        const checkboxes = document.querySelectorAll(".check-voiture:checked");
     
-    // --- Correction : Conversion de la date au format français ---
-    const rawDate = document.getElementById("date").value; 
+        if (checkboxes.length === 0) { alert("Veuillez sélectionner au moins une voiture."); return; }
     
-    // On convertit IMMÉDIATEMENT en format français
-    const [y, m, d] = rawDate.split('-');
-    const date = `${d}/${m}/${y}`; // Convertit en jj/mm/aaaa
-    // -------------------------------------------------------------
-    
-    const evenement = document.getElementById("event").value;
-    const circuit = document.getElementById("circuit").value;
-    const duree = parseFloat(document.getElementById("duree").value);
-    const notes = document.getElementById("notes").value;
-    const checkboxes = document.querySelectorAll(".check-voiture:checked");
-
-    if (checkboxes.length === 0) { alert("Veuillez sélectionner au moins une voiture."); return; }
-
-    for (const cb of checkboxes) {
-        const nomVoiture = cb.value;
-        const refHistorique = ref(db, `hangar/${nomVoiture}/historique`);
-        
-        try {
-            const snapshot = await get(refHistorique);
-            let hist = snapshot.val() || [];
+        // Utilisation d'une boucle asynchrone pour traiter chaque voiture proprement
+        for (const cb of checkboxes) {
+            const nomVoiture = cb.value;
+            const refHistorique = ref(db, `hangar/${nomVoiture}/historique`);
             
-            // La variable 'date' est maintenant au format jj/mm/aaaa
-            hist.push({ date, evenement, circuit, duree, notes });
-            
-            await update(ref(db, `hangar/${nomVoiture}`), { historique: hist });
-        } catch (error) {
-            console.error("Erreur lors de la mise à jour pour " + nomVoiture, error);
+            try {
+                const snapshot = await get(refHistorique);
+                let hist = snapshot.val() || [];
+                hist.push({ date, evenement, circuit, duree, notes });
+                await update(ref(db, `hangar/${nomVoiture}`), { historique: hist });
+            } catch (error) {
+                console.error("Erreur lors de la mise à jour pour " + nomVoiture, error);
+            }
         }
-    }
-    
-    alert("Sessions enregistrées !");
-    document.getElementById("form-session").reset();
-});
+        
+        alert("Sessions enregistrées !");
+        document.getElementById("form-session").reset(); // Vide le formulaire après l'envoi
+    });
 </script>
