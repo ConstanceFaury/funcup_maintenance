@@ -665,35 +665,35 @@ groupes.forEach(g => {
              Object.entries(hangar[voitureCourante].pieces).forEach(([id, p]) => {
                 if (g.cles.includes(p.cat)) {
                     // --- NOUVEAU : CALCUL DES HEURES BASÉ SUR LA DATE ---
-                    l// Calcul des heures depuis le dernier changement
-                        let dateMontage = convertirEnDate(p.dernierChangement);
-                        let heuresCumulees = (hangar[voitureCourante].historique || [])
-                            .filter(s => convertirEnDate(s.date) >= dateMontage)
-                            .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
-                        
-                        // Marge = Limite - Heures cumulées
-                        let margeRestante = p.limite - heuresCumulees;
-                        
-                        // Définition du statut visuel
-                        let statutTexte = margeRestante <= 0 ? 'À CHANGER' : 'OK';
-                        let statutClass = margeRestante <= 0 ? 'status-danger' : 'status-ok';
+                    let dateMontage = convertirEnDate(p.dernierChangement);
+                    let heuresCalculees = (hangar[voitureCourante].historique || [])
+                        .filter(s => convertirEnDate(s.date) >= dateMontage)
+                        .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
+                    
+                    // On met à jour la valeur réelle dans la pièce pour le calcul de marge
+                    let margeRestante = p.limite - heuresCalculees;
+                    let statutTexte = margeRestante <= 0 ? 'Changement' : 'OK';
+                    let statutClass = margeRestante <= 0 ? 'status-danger' : 'status-ok';
             
                     let tr = document.createElement("tr");
                     tr.innerHTML = `
-                            <td>
-                                <strong>${p.nom}</strong>
-                                <span class="date-changement">${p.dernierChangement ? 'Montée le : ' + p.dernierChangement : 'Aucune date'}</span>
-                            </td>
-                            <td>${heuresCumulees.toFixed(2)} h</td> <td>${p.limite} h</td>               <td>${margeRestante.toFixed(2)} h</td>  <td><span class="status ${statutClass}">${statutTexte}</span></td>
-                            <td>
-                                <div class="action-cell">
-                                    <input type="date" id="date-input-${id}" class="table-date-input">
-                                    <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
-                                    <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
-                                    <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
-                                </div>
-                            </td>
-                        `;
+                        <td>
+                            <strong>${p.nom}</strong>
+                            <span class="date-changement">${p.dernierChangement ? 'Montée le : ' + p.dernierChangement : 'Aucune historique date'}</span>
+                        </td>
+                        <td>${heuresCalculees.toFixed(2)} h</td>
+                        <td>${p.limite} h</td>
+                        <td>${margeRestante.toFixed(2)} h</td>
+                        <td><span class="status ${statutClass}">${statutTexte}</span></td>
+                        <td>
+                            <div class="action-cell">
+                                <input type="date" id="date-input-${id}" class="table-date-input">
+                                <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
+                                <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
+                                <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
+                            </div>
+                        </td>
+                    `;
                     tbody.appendChild(tr);
                     }
                 });
