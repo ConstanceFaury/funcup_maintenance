@@ -628,12 +628,12 @@ function rafraichirCheckboxes() {
     });
 };
 
-function convertirEnDate(dateStr) {
-    if (!dateStr || typeof dateStr !== 'string') return new Date(0);
+    function convertirEnDate(dateStr) {
+    if (!dateStr) return new Date(0); // Si pas de date, on considère que c'est le début des temps
     const [d, m, y] = dateStr.split('/').map(Number);
-    return new Date(y, m - 1, d); // Les mois commencent à 0 en JS
+    return new Date(y, m - 1, d);
 }
-    
+
     function majAffichage() {
         if (!voitureCourante || !hangar[voitureCourante]) return;
         document.getElementById("titre-voiture-alertes").textContent = voitureCourante;
@@ -665,10 +665,9 @@ groupes.forEach(g => {
              Object.entries(hangar[voitureCourante].pieces).forEach(([id, p]) => {
                 if (g.cles.includes(p.cat)) {
                     // --- NOUVEAU : CALCUL DES HEURES BASÉ SUR LA DATE ---
-                    // Dans la boucle de majAffichage :
                     let dateMontage = convertirEnDate(p.dernierChangement);
-                    let heuresCumulees = (hangar[voitureCourante].historique || [])
-                        .filter(s => convertirEnDate(s.date) >= dateMontage) // La comparaison est maintenant juste
+                    let heuresCalculees = (hangar[voitureCourante].historique || [])
+                        .filter(s => convertirEnDate(s.date) >= dateMontage)
                         .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
                     
                     // On met à jour la valeur réelle dans la pièce pour le calcul de marge
@@ -758,41 +757,33 @@ groupes.forEach(g => {
         });
     });
         
-   document.getElementById("form-session").addEventListener("submit", async (e) => {
-    e.preventDefault();
+    document.getElementById("form-session").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const date = document.getElementById("date").value;
+        const evenement = document.getElementById("event").value;
+        const circuit = document.getElementById("circuit").value;
+        const duree = parseFloat(document.getElementById("duree").value);
+        const notes = document.getElementById("notes").value;
+        const checkboxes = document.querySelectorAll(".check-voiture:checked");
     
-    // --- Correction : Conversion de la date au format français ---
-    const rawDate = document.getElementById("date").value; // Récupère le aaaa-mm-jj du navigateur
-    const [y, m, d] = rawDate.split('-');
-    const date = `${d}/${m}/${y}`; // Convertit en jj/mm/aaaa
-    // -------------------------------------------------------------
+        if (checkboxes.length === 0) { alert("Veuillez sélectionner au moins une voiture."); return; }
     
-    const evenement = document.getElementById("event").value;
-    const circuit = document.getElementById("circuit").value;
-    const duree = parseFloat(document.getElementById("duree").value);
-    const notes = document.getElementById("notes").value;
-    const checkboxes = document.querySelectorAll(".check-voiture:checked");
-
-    if (checkboxes.length === 0) { alert("Veuillez sélectionner au moins une voiture."); return; }
-
-    for (const cb of checkboxes) {
-        const nomVoiture = cb.value;
-        const refHistorique = ref(db, `hangar/${nomVoiture}/historique`);
-        
-        try {
-            const snapshot = await get(refHistorique);
-            let hist = snapshot.val() || [];
+        // Utilisation d'une boucle asynchrone pour traiter chaque voiture proprement
+        for (const cb of checkboxes) {
+            const nomVoiture = cb.value;
+            const refHistorique = ref(db, `hangar/${nomVoiture}/historique`);
             
-            // La variable 'date' est maintenant au format jj/mm/aaaa
-            hist.push({ date, evenement, circuit, duree, notes });
-            
-            await update(ref(db, `hangar/${nomVoiture}`), { historique: hist });
-        } catch (error) {
-            console.error("Erreur lors de la mise à jour pour " + nomVoiture, error);
+            try {
+                const snapshot = await get(refHistorique);
+                let hist = snapshot.val() || [];
+                hist.push({ date, evenement, circuit, duree, notes });
+                await update(ref(db, `hangar/${nomVoiture}`), { historique: hist });
+            } catch (error) {
+                console.error("Erreur lors de la mise à jour pour " + nomVoiture, error);
+            }
         }
-    }
-    
-    alert("Sessions enregistrées !");
-    document.getElementById("form-session").reset();
-});
+        
+        alert("Sessions enregistrées !");
+        document.getElementById("form-session").reset(); // Vide le formulaire après l'envoi
+    });
 </script>
