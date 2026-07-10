@@ -567,11 +567,19 @@ function rafraichirCheckboxes() {
         });
     };
 
-    window.remplacerPiece = (id) => {
-        const date = document.getElementById("date-input-" + id).value;
-        if (!date) return;
-        update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { heuresActuelles: 0, dernierChangement: date });
-    };
+  window.remplacerPiece = (id) => {
+    const rawDate = document.getElementById("date-input-" + id).value; 
+    if (!rawDate) return;
+    
+    // Conversion forcée en format français avant envoi
+    const [y, m, d] = rawDate.split('-');
+    const dateFr = `${d}/${m}/${y}`;
+    
+    update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { 
+        heuresActuelles: 0, 
+        dernierChangement: dateFr 
+    });
+};
 
     window.supprimerCourse = function(index) {
         if (!confirm("Supprimer cette session ?")) return;
@@ -774,7 +782,9 @@ groupes.forEach(g => {
     e.preventDefault();
     
     // --- Correction : Conversion de la date au format français ---
-    const rawDate = document.getElementById("date").value; // Récupère le aaaa-mm-jj du navigateur
+    const rawDate = document.getElementById("date").value; 
+    
+    // On convertit IMMÉDIATEMENT en format français
     const [y, m, d] = rawDate.split('-');
     const date = `${d}/${m}/${y}`; // Convertit en jj/mm/aaaa
     // -------------------------------------------------------------
