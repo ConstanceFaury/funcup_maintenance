@@ -630,14 +630,20 @@ function rafraichirCheckboxes() {
 
 function convertirEnDate(dateStr) {
     if (!dateStr) return new Date(0);
-    // Si c'est du AAAA-MM-DD
+
+    // Si la date contient des tirets (format ancien aaaa-mm-jj)
     if (dateStr.includes('-')) {
         const [y, m, d] = dateStr.split('-');
         return new Date(y, m - 1, d);
     }
-    // Si c'est du DD/MM/AAAA
-    const [d, m, y] = dateStr.split('/');
-    return new Date(y, m - 1, d);
+    
+    // Si la date contient des slashs (format nouveau jj/mm/aaaa)
+    if (dateStr.includes('/')) {
+        const [d, m, y] = dateStr.split('/');
+        return new Date(y, m - 1, d);
+    }
+
+    return new Date(0);
 }
     
     function majAffichage() {
