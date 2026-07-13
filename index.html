@@ -322,11 +322,6 @@
             width: 100% !important; 
         }
     }
-
-        .status-warn { 
-            background-color: var(--warning); /* Orange défini dans ton :root */
-            color: white;
-        }
     </style>
 </head>
 <body>
@@ -688,22 +683,11 @@ groupes.forEach(g => {
                         .filter(s => convertirEnDate(s.date) >= dateMontage)
                         .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
                     
-               
-
+                    // On met à jour la valeur réelle dans la pièce pour le calcul de marge
                     let margeRestante = p.limite - heuresCalculees;
-                    let seuilAlerte = p.limite * 0.15; // Alerte préventive si on est à moins de 15% de la limite
-                    
-                    let statutTexte = 'OK';
-                    let statutClass = 'status-ok';
-                    
-                    if (margeRestante <= 0) {
-                        statutTexte = 'Changement';
-                        statutClass = 'status-danger'; // Rouge
-                    } else if (margeRestante <= seuilAlerte) {
-                        statutTexte = 'À prévoir'; // Nouveau statut
-                        statutClass = 'status-warn'; // Orange (il faut définir cette classe en CSS)
-                    }
-                                
+                    let statutTexte = margeRestante <= 0 ? 'Changement' : 'OK';
+                    let statutClass = margeRestante <= 0 ? 'status-danger' : 'status-ok';
+            
                     let tr = document.createElement("tr");
                     tr.innerHTML = `
                         <td>
