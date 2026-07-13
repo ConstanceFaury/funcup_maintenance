@@ -679,7 +679,7 @@ groupes.forEach(g => {
     div.innerHTML = `<span style="color: white; font-weight: bold;">${g.titre}</span>`;
     
     let table = document.createElement("table");
-    table.innerHTML = `<thead><tr><th>Pièce</th><th>Marge</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody></tbody>`;
+    table.innerHTML = `<thead><tr><th>Pièce</th><th>Quotas heures</th><th>Status</th><th>Temps restant</th><th>Action</th></tr></thead><tbody></tbody>`;
     let tbody = table.querySelector("tbody");
 
             if (hangar[voitureCourante].pieces) {
