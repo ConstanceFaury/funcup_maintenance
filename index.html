@@ -507,20 +507,6 @@
 
     function obtenirDateDuJour() { return new Date().toISOString().split('T')[0]; }
     
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-    const auth = getAuth(app);
-    
-    // Connexion automatique lors du chargement de la page
-    signInWithEmailAndPassword(auth, "constancefaury@gmail.com", "Alpine1300R5*")
-        .then((userCredential) => {
-            console.log("Connecté avec succès !");
-            // Une fois connecté, Firebase autorise automatiquement la lecture des données
-        })
-        .catch((error) => {
-            console.error("Erreur de connexion :", error.message);
-            alert("Impossible de se connecter à la base de données. Vérifie tes identifiants.");
-        });
 
     onValue(ref(db, 'hangar'), (snapshot) => {
         hangar = snapshot.val() || {};
