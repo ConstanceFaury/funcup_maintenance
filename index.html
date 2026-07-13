@@ -653,6 +653,7 @@ function convertirEnDate(dateStr) {
 }
 
     function majAffichage() {
+        console.log("Structure des pièces :", hangar[voitureCourante].pieces);
         if (!voitureCourante || !hangar[voitureCourante]) return;
         document.getElementById("titre-voiture-alertes").textContent = voitureCourante;
         const container = document.getElementById("maintenance-tables-container");
