@@ -436,9 +436,21 @@
 </div>
 
 <script type="module">
+    import { CONFIG } from './secrets.js';
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue, update, remove, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
+    
+    const auth = getAuth(app);
+    
+    // 3. Utilisation des données sécurisées pour la connexion
+    signInWithEmailAndPassword(auth, CONFIG.email, CONFIG.password)
+        .then(() => {
+            console.log("Connecté avec succès !");
+        })
+        .catch((error) => {
+            console.error("Erreur de connexion :", error.message);
+        });
+    
     const firebaseConfig = {
         apiKey: "AIzaSyD1Ea_dUlVMyyJhxdyxyoZrR5EIBnvb_iQ",
         authDomain: "funcup-maintenance.firebaseapp.com",
