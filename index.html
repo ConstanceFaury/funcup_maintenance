@@ -652,6 +652,8 @@ function convertirEnDate(dateStr) {
     return new Date(0);
 }
 
+    
+
     function majAffichage() {
         console.log("Structure des pièces :", hangar[voitureCourante].pieces);
         if (!voitureCourante || !hangar[voitureCourante]) return;
@@ -679,9 +681,22 @@ groupes.forEach(g => {
     let table = document.createElement("table");
     table.innerHTML = `<thead><tr><th>Pièce</th><th>Marge</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody></tbody>`;
     let tbody = table.querySelector("tbody");
-            
+
             if (hangar[voitureCourante].pieces) {
-             Object.entries(hangar[voitureCourante].pieces).forEach(([id, p]) => {
+
+                
+                // DEBUG : Regardons ce que Firebase contient vraiment
+                const piecesData = hangar[voitureCourante].pieces;
+                console.log("Données reçues :", piecesData);
+                
+                if (piecesData) {
+                    const unePiece = Object.values(piecesData)[0];
+                    console.log("Contenu d'une pièce :", unePiece);
+                    console.log("Propriété 'cat' trouvée ?", unePiece ? unePiece.cat : "N/A");
+                }
+
+                
+                Object.entries(hangar[voitureCourante].pieces).forEach(([id, p]) => {
                 if (g.cles.includes(p.cat)) {
                     // --- NOUVEAU : CALCUL DES HEURES BASÉ SUR LA DATE ---
                     let dateMontage = convertirEnDate(p.dernierChangement);
