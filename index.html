@@ -322,6 +322,11 @@
             width: 100% !important; 
         }
     }
+
+        .status-warn { 
+            background-color: var(--warning); /* Orange défini dans ton :root */
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -567,11 +572,14 @@ function rafraichirCheckboxes() {
         });
     };
 
-    window.remplacerPiece = (id) => {
-        const date = document.getElementById("date-input-" + id).value;
-        if (!date) return;
-        update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { heuresActuelles: 0, dernierChangement: date });
-    };
+   window.remplacerPiece = (id) => {
+    const date = document.getElementById("date-input-" + id).value; // ex: "2026-07-10"
+    if (!date) return;
+    update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { 
+        heuresActuelles: 0, 
+        dernierChangement: date // Firebase enregistre "2026-07-10"
+    });
+};
 
     window.supprimerCourse = function(index) {
         if (!confirm("Supprimer cette session ?")) return;
@@ -628,10 +636,20 @@ function rafraichirCheckboxes() {
     });
 };
 
-    function convertirEnDate(dateStr) {
-    if (!dateStr) return new Date(0); // Si pas de date, on considère que c'est le début des temps
-    const [d, m, y] = dateStr.split('/').map(Number);
-    return new Date(y, m - 1, d);
+function convertirEnDate(dateStr) {
+    if (!dateStr) return new Date(0);
+
+    // Si la date contient des tirets (format HTML YYYY-MM-DD)
+    if (dateStr.includes('-')) {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        return new Date(y, m - 1, d);
+    } 
+    // Si la date contient des slashs (ton ancien format DD/MM/YYYY)
+    else if (dateStr.includes('/')) {
+        const [d, m, y] = dateStr.split('/').map(Number);
+        return new Date(y, m - 1, d);
+    }
+    return new Date(0);
 }
 
     function majAffichage() {
@@ -670,11 +688,22 @@ groupes.forEach(g => {
                         .filter(s => convertirEnDate(s.date) >= dateMontage)
                         .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
                     
-                    // On met à jour la valeur réelle dans la pièce pour le calcul de marge
+               
+
                     let margeRestante = p.limite - heuresCalculees;
-                    let statutTexte = margeRestante <= 0 ? 'Changement' : 'OK';
-                    let statutClass = margeRestante <= 0 ? 'status-danger' : 'status-ok';
-            
+                    let seuilAlerte = p.limite * 0.15; // Alerte préventive si on est à moins de 15% de la limite
+                    
+                    let statutTexte = 'OK';
+                    let statutClass = 'status-ok';
+                    
+                    if (margeRestante <= 0) {
+                        statutTexte = 'Changement';
+                        statutClass = 'status-danger'; // Rouge
+                    } else if (margeRestante <= seuilAlerte) {
+                        statutTexte = 'À prévoir'; // Nouveau statut
+                        statutClass = 'status-warn'; // Orange (il faut définir cette classe en CSS)
+                    }
+                                
                     let tr = document.createElement("tr");
                     tr.innerHTML = `
                         <td>
