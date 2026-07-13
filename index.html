@@ -685,17 +685,12 @@ groupes.forEach(g => {
             if (hangar[voitureCourante].pieces) {
 
                 
-                // DEBUG : Regardons ce que Firebase contient vraiment
-                const piecesData = hangar[voitureCourante].pieces;
-                console.log("Données reçues :", piecesData);
-                
-                if (piecesData) {
-                    const unePiece = Object.values(piecesData)[0];
-                    console.log("Contenu d'une pièce :", unePiece);
-                    console.log("Propriété 'cat' trouvée ?", unePiece ? unePiece.cat : "N/A");
-                }
-
-                
+                         // TEST DEBUG
+                console.log("DEBUG - Contenu complet de pieces:", hangar[voitureCourante].pieces);
+                // Si la ligne suivante affiche 'undefined', c'est que la structure est corrompue
+                const exemple = Object.values(hangar[voitureCourante].pieces)[0];
+                console.log("DEBUG - Structure d'une pièce:", exemple);
+                                
                 Object.entries(hangar[voitureCourante].pieces).forEach(([id, p]) => {
                 if (g.cles.includes(p.cat)) {
                     // --- NOUVEAU : CALCUL DES HEURES BASÉ SUR LA DATE ---
