@@ -681,7 +681,7 @@ function majAffichage() {
     const groupes = [
         { id: "Moteur", titre: "⚙️ CATÉGORIE : MOTEUR", class: "cat-moteur", cles: ["Moteur"] },
         { id: "Transmission", titre: "⛓️ CATÉGORIE : TRANSMISSION", class: "cat-transmission", cles: ["Transmission"] },
-        { id: "Freins", titre: "🛑 CATÉGORIE : FREINS", class: "cat-freins", cles: ["Frein", "Freinage"] },
+        { id: "Freins", titre: "🛑 CATÉGORIE : FREINS", class: "cat-freins", cles: ["Frein", "Freinage", "Freins"] },
         { id: "Train avant", titre: "🚘 CATÉGORIE : TRAIN AVANT", class: "cat-train-avant", cles: ["Train avant"] },
         { id: "Train arrière", titre: "🏎️ CATÉGORIE : TRAIN ARRIÈRE", class: "cat-train-arriere", cles: ["Train arrière"] }
     ];
@@ -695,12 +695,11 @@ function majAffichage() {
         table.innerHTML = `<thead><tr><th>Pièce</th><th>Quotas heures</th><th>Status</th><th>Temps restant</th><th>Action</th></tr></thead><tbody></tbody>`;
         let tbody = table.querySelector("tbody");
 
-        // --- SÉCURITÉ : On récupère les pièces proprement ---
         const pieces = hangar[voitureCourante].pieces || {}; 
         
-        // --- BOUCLE UNIVERSELLE : Fonctionne avec nombres OU IDs uniques ---
         Object.entries(pieces).forEach(([id, p]) => {
-            if (g.cles.includes(p.cat)) {
+            // SÉCURITÉ : Vérifie que l'objet a bien une catégorie avant de comparer
+            if (p && p.cat && g.cles.includes(p.cat)) {
                 let dateMontage = convertirEnDate(p.dernierChangement);
                 let heuresCalculees = (hangar[voitureCourante].historique || [])
                     .filter(s => convertirEnDate(s.date) >= dateMontage)
@@ -723,11 +722,11 @@ function majAffichage() {
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td>
-                        <strong>${p.nom}</strong>
+                        <strong>${p.nom || "Sans nom"}</strong>
                         <span class="date-changement">${p.dernierChangement ? 'Montée le : ' + p.dernierChangement : 'Aucune date'}</span>
                     </td>
                     <td>${heuresCalculees.toFixed(2)} h</td>
-                    <td>${p.limite} h</td>
+                    <td>${p.limite || 0} h</td>
                     <td>${margeRestante.toFixed(2)} h</td>
                     <td><span class="status ${statutClass}">${statutTexte}</span></td>
                     <td>
@@ -744,37 +743,14 @@ function majAffichage() {
         });
         
         let trAjout = document.createElement("tr");
-        trAjout.innerHTML = `
-            <td colspan="6" style="text-align:center; background:#f0f0f0; padding: 10px;">
-                <button class="btn-add-piece" onclick="ajouterPiecePourCategorie('${g.id}')">
-                    ➕ Ajouter une pièce dans ${g.id}
-                </button>
-            </td>
-        `;
+        trAjout.innerHTML = `<td colspan="6" style="text-align:center; background:#f0f0f0; padding: 10px;">
+            <button class="btn-add-piece" onclick="ajouterPiecePourCategorie('${g.id}')">
+                ➕ Ajouter une pièce dans ${g.id}
+            </button></td>`;
         tbody.appendChild(trAjout);
         container.appendChild(div);
         container.appendChild(table);
     });
-
-    // --- MISE À JOUR HISTORIQUE ---
-    const tbodyCourse = document.querySelector("#table-course tbody");
-    tbodyCourse.innerHTML = "";
-    if (hangar[voitureCourante].historique && hangar[voitureCourante].historique.length > 0) {
-        hangar[voitureCourante].historique.forEach((session, index) => {
-            let tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td><strong>${session.date}</strong></td>
-                <td>${session.evenement}</td>
-                <td>${session.circuit}</td>
-                <td><strong>${session.duree} h</strong></td>
-                <td>${session.notes || '-'}</td>
-                <td><button class="btn-delete-row" onclick="supprimerCourse(${index})">🗑️</button></td>
-            `;
-            tbodyCourse.appendChild(tr);
-        });
-    } else {
-        tbodyCourse.innerHTML = "<tr><td colspan='6'>Aucune session.</td></tr>";
-    }
 }
     
     
