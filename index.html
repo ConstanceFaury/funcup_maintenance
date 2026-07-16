@@ -553,11 +553,17 @@ function rafraichirCheckboxes() {
     };
 
  window.ajouterPiecePourCategorie = (cat) => {
+    // Vérification de sécurité
+    if (typeof db === 'undefined') {
+        console.error("Erreur : La base de données (db) n'est pas encore initialisée !");
+        alert("Le système est en cours de chargement, réessaie dans une seconde.");
+        return;
+    }
+
     const nom = prompt("Nom de la pièce :");
     if (!nom) return;
     const lim = parseFloat(prompt("Limite heures :")) || 100;
     
-    // On pousse la nouvelle pièce
     push(ref(db, `hangar/${voitureCourante}/pieces/`), { 
         cat: cat, 
         nom: nom, 
@@ -566,13 +572,8 @@ function rafraichirCheckboxes() {
         dernierChangement: "" 
     }).then(() => {
         console.log("Pièce ajoutée avec succès");
-        // AJOUTE CETTE LIGNE ICI :
-        // Remplace 'majAffichage' par le nom exact de la fonction qui construit tes tableaux
-        if (typeof majAffichage === 'function') {
-            majAffichage(); 
-        } else {
-            location.reload(); // Solution de secours si majAffichage n'est pas accessible
-        }
+        // Rafraîchissement forcé
+        if (typeof majAffichage === 'function') majAffichage();
     });
 };
     
