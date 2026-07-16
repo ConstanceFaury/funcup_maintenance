@@ -501,38 +501,6 @@
         { cat: "Frein", nom: "Coupelles d'étriers", heuresActuelles: 0, limite: 200, dernierChangement: "" }
     ];
 
-    const donneesTechniques = {
-    "Bougies": { ref: "MO239", prix: 23.76 },
-    "Démarreur": { ref: "MO15", prix: 179.71 },
-    "Alternateur": { ref: "MO01", prix: 230.06 },
-    "Filtre à huile": { ref: "MO223", prix: 13.01 },
-    "Filtre à essence": { ref: "M126", prix: 14.08 },
-    "Pompe à Essence": { ref: "M318", prix: 110.66 },
-    "Filtre à air": { ref: "MO44", prix: 51.20 },
-    "Bobine": { ref: "MO224", prix: 24.14 },
-    "Régulateur de pression essence": { ref: "M130", prix: 61.04 },
-    "Vase expansion et bouchon": { ref: "M100", prix: 18.78 },
-    "Courroie d'accessoires": { ref: "MO244", prix: 10.90 },
-    "Disque d'embrayage": { ref: "T056", prix: 305.79 },
-    "Mécanisme d'embrayage": { ref: "T057", prix: 177.03 },
-    "Coupelle de pompe": { ref: "T006SB", prix: 23.94 },
-    "Butée (coupelle et roulement)": { ref: "T006S", prix: 463.32 },
-    "Cardan droit": { ref: "T007", prix: 555.95 },
-    "Cardan gauche": { ref: "T008", prix: 547.71 },
-    "Groupe paddle shift": { ref: "BS135", prix: 7620.06 },
-    "Coupelles d'étriers": { ref: "F0088", prix: 5.97 },
-    "Roulement de roue": { ref: "S039", prix: 49.99 },
-    "Rotule inférieur droit": { ref: "RID", prix: 56.05 },
-    "Rotule inférieur gauche": { ref: "RIG", prix: 48.80 },
-    "Rotule supérieure amortisseur D": { ref: "S037", prix: 87.15 },
-    "Rotule supérieure amortisseur G": { ref: "S038", prix: 87.15 },
-    "Rotule de direction": { ref: "D017", prix: 24.49 },
-    "Barre de direction D": { ref: "D004", prix: 61.08 },
-    "Barre de direction G": { ref: "D004", prix: 61.08 },
-    "Amortisseur D": { ref: "S013", prix: 765.09 },
-    "Amortisseur G": { ref: "S013", prix: 765.09 }
-};
-
     let hangar = {};
     let voitureCourante = "";
 
@@ -640,35 +608,32 @@ function rafraichirCheckboxes() {
     };
 
    window.genererPDF = function(mode) {
-    const container = document.getElementById('maintenance-tables-container').cloneNode(true);
-    let prixTotal = 0;
+    const container = document.getElementById('maintenance-tables-container');
+    
+    // 1. CRÉATION ET AJOUT DE L'EN-TÊTE DYNAMIQUE
+    const header = document.createElement('div');
+    header.id = "pdf-header"; // On lui donne un ID pour pouvoir le supprimer facilement après
+    header.innerHTML = `
+        <div style="border-bottom: 2px solid #e60000; margin-bottom: 20px; padding-bottom: 10px;">
+            <h1 style="color: #e60000; margin: 0;">4-RACE - MAINTENANCE</h1>
+            <p style="margin: 0;">Voiture : <strong>${voitureCourante}</strong> | Date : ${new Date().toLocaleDateString()}</p>
+        </div>
+    `;
+    container.prepend(header);
+    
+    // 1. On cache tout ce qui ne doit pas apparaître sur le PDF
+    const elementsACacher = container.querySelectorAll('.action-cell, .btn-add-piece, tr:has(.btn-add-piece)');
+    elementsACacher.forEach(el => el.style.display = 'none');
 
-    container.querySelectorAll('table').forEach(table => {
-        const headerRow = table.querySelector('thead tr');
-        headerRow.innerHTML += '<th>Réf</th><th>Prix</th>';
-
-        table.querySelectorAll('tbody tr').forEach(tr => {
-            const nomCell = tr.querySelector('td strong');
-            if (!nomCell) return;
-            const nomPiece = nomCell.textContent.trim();
-            const data = donneesTechniques[nomPiece];
-            
-            if (tr.querySelector('.status-danger') && data) {
-                prixTotal += data.prix;
-            }
-            tr.innerHTML += `<td>${data ? data.ref : '-'}</td><td>${data ? data.prix.toFixed(2) + ' €' : '-'}</td>`;
-        });
-    });
-
+    // 2. Si mode 'urgent', on cache les lignes qui sont OK
+    const toutesLesLignes = container.querySelectorAll('tbody tr');
     if (mode === 'urgent') {
-        const totalDiv = document.createElement('div');
-        totalDiv.innerHTML = `<h3 style="color: #e60000; text-align: right;">Total Estimé : ${prixTotal.toFixed(2)} €</h3>`;
-        container.appendChild(totalDiv);
+        toutesLesLignes.forEach(tr => {
+            if (tr.textContent.includes('OK')) {
+                tr.style.display = 'none';
+            }
+        });
     }
-
-    const opt = { margin: 10, filename: `Maintenance_${mode}.pdf`, html2canvas: { scale: 2 } };
-    html2pdf().set(opt).from(container).save();
-};
 
     // 3. Configuration PDF avec en-tête sympa
     const opt = {
