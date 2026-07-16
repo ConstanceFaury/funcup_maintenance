@@ -671,15 +671,13 @@ function convertirEnDate(dateStr) {
 }
 
     
-
-    function majAffichage() {
-        console.log("Structure des pièces :", hangar[voitureCourante].pieces);
-        if (!voitureCourante || !hangar[voitureCourante]) return;
-        document.getElementById("titre-voiture-alertes").textContent = voitureCourante;
-        const container = document.getElementById("maintenance-tables-container");
-        container.innerHTML = "";
-        
-        
+function majAffichage() {
+    if (!voitureCourante || !hangar[voitureCourante]) return;
+    
+    document.getElementById("titre-voiture-alertes").textContent = voitureCourante;
+    const container = document.getElementById("maintenance-tables-container");
+    container.innerHTML = "";
+    
     const groupes = [
         { id: "Moteur", titre: "⚙️ CATÉGORIE : MOTEUR", class: "cat-moteur", cles: ["Moteur"] },
         { id: "Transmission", titre: "⛓️ CATÉGORIE : TRANSMISSION", class: "cat-transmission", cles: ["Transmission"] },
@@ -688,96 +686,81 @@ function convertirEnDate(dateStr) {
         { id: "Train arrière", titre: "🏎️ CATÉGORIE : TRAIN ARRIÈRE", class: "cat-train-arriere", cles: ["Train arrière"] }
     ];
 
-groupes.forEach(g => {
-    let div = document.createElement("div");
-    // On s'assure que la classe est bien appliquée
-    div.className = "category-header " + g.class;
-    
-    // Force l'affichage du titre dans un span
-    div.innerHTML = `<span style="color: white; font-weight: bold;">${g.titre}</span>`;
-    
-    let table = document.createElement("table");
-    table.innerHTML = `<thead><tr><th>Pièce</th><th>Quotas heures</th><th>Status</th><th>Temps restant</th><th>Action</th></tr></thead><tbody></tbody>`;
-    let tbody = table.querySelector("tbody");
+    groupes.forEach(g => {
+        let div = document.createElement("div");
+        div.className = "category-header " + g.class;
+        div.innerHTML = `<span style="color: white; font-weight: bold;">${g.titre}</span>`;
+        
+        let table = document.createElement("table");
+        table.innerHTML = `<thead><tr><th>Pièce</th><th>Quotas heures</th><th>Status</th><th>Temps restant</th><th>Action</th></tr></thead><tbody></tbody>`;
+        let tbody = table.querySelector("tbody");
 
-            if (hangar[voitureCourante].pieces) {
-
+        // --- SÉCURITÉ : On récupère les pièces proprement ---
+        const pieces = hangar[voitureCourante].pieces || {}; 
+        
+        // --- BOUCLE UNIVERSELLE : Fonctionne avec nombres OU IDs uniques ---
+        Object.entries(pieces).forEach(([id, p]) => {
+            if (g.cles.includes(p.cat)) {
+                let dateMontage = convertirEnDate(p.dernierChangement);
+                let heuresCalculees = (hangar[voitureCourante].historique || [])
+                    .filter(s => convertirEnDate(s.date) >= dateMontage)
+                    .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
                 
-                         // TEST DEBUG
-                console.log("DEBUG - Contenu complet de pieces:", hangar[voitureCourante].pieces);
-                // Si la ligne suivante affiche 'undefined', c'est que la structure est corrompue
-                const exemple = Object.values(hangar[voitureCourante].pieces)[0];
-                console.log("DEBUG - Structure d'une pièce:", exemple);
-                                
-                Object.entries(hangar[voitureCourante].pieces).forEach(([id, p]) => {
-                if (g.cles.includes(p.cat)) {
-                    // --- NOUVEAU : CALCUL DES HEURES BASÉ SUR LA DATE ---
-                    let dateMontage = convertirEnDate(p.dernierChangement);
-                    let heuresCalculees = (hangar[voitureCourante].historique || [])
-                        .filter(s => convertirEnDate(s.date) >= dateMontage)
-                        .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
-                    
-               
-
-                    let margeRestante = p.limite - heuresCalculees;
-                    let seuilAlerte = p.limite * 0.15; // Alerte préventive si on est à moins de 15% de la limite
-                    
-                    let statutTexte = 'OK';
-                    let statutClass = 'status-ok';
-                    
-                    if (margeRestante <= 0) {
-                        statutTexte = 'Changement';
-                        statutClass = 'status-danger'; // Rouge
-                    } else if (margeRestante <= seuilAlerte) {
-                        statutTexte = 'À prévoir'; // Nouveau statut
-                        statutClass = 'status-warn'; // Orange (il faut définir cette classe en CSS)
-                    }
-                                
-                    let tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>
-                            <strong>${p.nom}</strong>
-                            <span class="date-changement">${p.dernierChangement ? 'Montée le : ' + p.dernierChangement : 'Aucune historique date'}</span>
-                        </td>
-                        <td>${heuresCalculees.toFixed(2)} h</td>
-                        <td>${p.limite} h</td>
-                        <td>${margeRestante.toFixed(2)} h</td>
-                        <td><span class="status ${statutClass}">${statutTexte}</span></td>
-                        <td>
-                            <div class="action-cell">
-                                <input type="date" id="date-input-${id}" class="table-date-input">
-                                <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
-                                <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
-                                <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                    }
-                });
+                let margeRestante = p.limite - heuresCalculees;
+                let seuilAlerte = p.limite * 0.15;
+                
+                let statutTexte = 'OK';
+                let statutClass = 'status-ok';
+                
+                if (margeRestante <= 0) {
+                    statutTexte = 'Changement';
+                    statutClass = 'status-danger';
+                } else if (margeRestante <= seuilAlerte) {
+                    statutTexte = 'À prévoir';
+                    statutClass = 'status-warn';
+                }
+                            
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>
+                        <strong>${p.nom}</strong>
+                        <span class="date-changement">${p.dernierChangement ? 'Montée le : ' + p.dernierChangement : 'Aucune date'}</span>
+                    </td>
+                    <td>${heuresCalculees.toFixed(2)} h</td>
+                    <td>${p.limite} h</td>
+                    <td>${margeRestante.toFixed(2)} h</td>
+                    <td><span class="status ${statutClass}">${statutTexte}</span></td>
+                    <td>
+                        <div class="action-cell">
+                            <input type="date" id="date-input-${id}" class="table-date-input">
+                            <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
+                            <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
+                            <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
             }
-            
-            // Maintenant tbody est bien défini et utilisable ici
-            let trAjout = document.createElement("tr");
-            trAjout.innerHTML = `
-                <td colspan="6" style="text-align:center; background:#f0f0f0; padding: 10px;">
-                    <button class="btn-add-piece" onclick="ajouterPiecePourCategorie('${g.id}')">
-                        ➕ Ajouter une pièce dans ${g.id}
-                    </button>
-                </td>
-            `;
-            tbody.appendChild(trAjout);
-            
-            container.appendChild(div);
-            container.appendChild(table);
         });
+        
+        let trAjout = document.createElement("tr");
+        trAjout.innerHTML = `
+            <td colspan="6" style="text-align:center; background:#f0f0f0; padding: 10px;">
+                <button class="btn-add-piece" onclick="ajouterPiecePourCategorie('${g.id}')">
+                    ➕ Ajouter une pièce dans ${g.id}
+                </button>
+            </td>
+        `;
+        tbody.appendChild(trAjout);
+        container.appendChild(div);
+        container.appendChild(table);
+    });
 
-        const tbodyCourse = document.querySelector("#table-course tbody");
+    // --- MISE À JOUR HISTORIQUE ---
+    const tbodyCourse = document.querySelector("#table-course tbody");
     tbodyCourse.innerHTML = "";
-    let donneesVoiture = hangar[voitureCourante];
-    
-    if (donneesVoiture.historique && donneesVoiture.historique.length > 0) {
-        donneesVoiture.historique.forEach((session, index) => {
+    if (hangar[voitureCourante].historique && hangar[voitureCourante].historique.length > 0) {
+        hangar[voitureCourante].historique.forEach((session, index) => {
             let tr = document.createElement("tr");
             tr.innerHTML = `
                 <td><strong>${session.date}</strong></td>
