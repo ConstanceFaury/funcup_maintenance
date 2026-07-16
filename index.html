@@ -552,13 +552,23 @@ function rafraichirCheckboxes() {
         }
     };
 
-    window.ajouterPiecePourCategorie = (cat) => {
+   window.ajouterPiecePourCategorie = (cat) => {
         const nom = prompt("Nom de la pièce :");
         if (!nom) return;
         const lim = parseFloat(prompt("Limite heures :")) || 100;
-        push(ref(db, `hangar/${voitureCourante}/pieces/`), { cat, nom, limite: lim, heuresActuelles: 0, dernierChangement: "" });
+        
+        // On pousse la nouvelle pièce dans Firebase
+        push(ref(db, `hangar/${voitureCourante}/pieces/`), { 
+            cat: cat, 
+            nom: nom, 
+            limite: lim, 
+            heuresActuelles: 0, 
+            dernierChangement: "" 
+        }).then(() => {
+            // Optionnel : un petit log pour confirmer l'envoi
+            console.log("Pièce ajoutée avec succès");
+        });
     };
-
    window.supprimerPiece = (id) => {
         if (confirm("Supprimer cette pièce ?")) {
             remove(ref(db, `hangar/${voitureCourante}/pieces/${id}`));
