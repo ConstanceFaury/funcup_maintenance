@@ -552,23 +552,30 @@ function rafraichirCheckboxes() {
         }
     };
 
-   window.ajouterPiecePourCategorie = (cat) => {
-        const nom = prompt("Nom de la pièce :");
-        if (!nom) return;
-        const lim = parseFloat(prompt("Limite heures :")) || 100;
-        
-        // On pousse la nouvelle pièce dans Firebase
-        push(ref(db, `hangar/${voitureCourante}/pieces/`), { 
-            cat: cat, 
-            nom: nom, 
-            limite: lim, 
-            heuresActuelles: 0, 
-            dernierChangement: "" 
-        }).then(() => {
-            // Optionnel : un petit log pour confirmer l'envoi
-            console.log("Pièce ajoutée avec succès");
-        });
-    };
+ window.ajouterPiecePourCategorie = (cat) => {
+    const nom = prompt("Nom de la pièce :");
+    if (!nom) return;
+    const lim = parseFloat(prompt("Limite heures :")) || 100;
+    
+    // On pousse la nouvelle pièce
+    push(ref(db, `hangar/${voitureCourante}/pieces/`), { 
+        cat: cat, 
+        nom: nom, 
+        limite: lim, 
+        heuresActuelles: 0, 
+        dernierChangement: "" 
+    }).then(() => {
+        console.log("Pièce ajoutée avec succès");
+        // AJOUTE CETTE LIGNE ICI :
+        // Remplace 'majAffichage' par le nom exact de la fonction qui construit tes tableaux
+        if (typeof majAffichage === 'function') {
+            majAffichage(); 
+        } else {
+            location.reload(); // Solution de secours si majAffichage n'est pas accessible
+        }
+    });
+};
+    
    window.supprimerPiece = (id) => {
         if (confirm("Supprimer cette pièce ?")) {
             remove(ref(db, `hangar/${voitureCourante}/pieces/${id}`));
