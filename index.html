@@ -751,6 +751,31 @@ function majAffichage() {
         container.appendChild(div);
         container.appendChild(table);
     });
+    const tbodyCourse = document.querySelector("#table-course tbody");
+    if (tbodyCourse) {
+        tbodyCourse.innerHTML = "";
+        let donneesVoiture = hangar[voitureCourante];
+        
+        // On vérifie que historique existe, sinon on met un tableau vide pour éviter le crash
+        let historique = donneesVoiture.historique || [];
+        
+        if (historique.length > 0) {
+            historique.forEach((session, index) => {
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${session.date || '-'}</strong></td>
+                    <td>${session.evenement || '-'}</td>
+                    <td>${session.circuit || '-'}</td>
+                    <td><strong>${session.duree || 0} h</strong></td>
+                    <td>${session.notes || '-'}</td>
+                    <td><button class="btn-delete-row" onclick="supprimerCourse(${index})">🗑️</button></td>
+                `;
+                tbodyCourse.appendChild(tr);
+            });
+        } else {
+            tbodyCourse.innerHTML = "<tr><td colspan='6'>Aucune session enregistrée.</td></tr>";
+        }
+    }
 }
     
     
