@@ -717,21 +717,22 @@ window.genererPDF = function(mode) {
     // --- NOUVEAU : PROTECTION CONTRE LE SAUT DE PAGE ---
     const style = document.createElement('style');
     style.innerHTML = `
-        table, tr, td { page-break-inside: avoid !important; }
-        .category-header { page-break-after: avoid !important; }
+        /* On autorise les lignes à être coupées si besoin, mais on protège les titres */
+        .category-header { page-break-after: avoid; }
+        table { page-break-inside: auto; }
+        tr { page-break-inside: avoid; page-break-after: auto; }
     `;
     container.appendChild(style);
     // ----------------------------------------------------
 
     // 4. Génération
-  const opt = { 
-        margin: [10, 10, 20, 10], // Augmente la marge basse pour laisser respirer
+const opt = { 
+        margin: [10, 10, 10, 10],
         filename: `Maintenance_${mode}_${voitureCourante}.pdf`, 
-        image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        // La ligne ci-dessous est cruciale :
-        pagebreak: { mode: 'avoid', before: '.category-header' } 
+        // On supprime la règle "before: .category-header" qui forçait trop de sauts
+        pagebreak: { mode: 'css' } 
     };
     
     html2pdf().set(opt).from(container).save();
