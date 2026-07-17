@@ -643,14 +643,24 @@ window.genererPDF = function(mode) {
     const container = document.getElementById('maintenance-tables-container').cloneNode(true);
     let prixTotal = 0;
 
-    // 2. Nettoyage du clone pour le PDF
+    // --- NOUVEAU : AJOUT DE L'EN-TÊTE DANS LE CLONE ---
+    const header = document.createElement('div');
+    header.innerHTML = `
+        <div style="border-bottom: 2px solid #e60000; margin-bottom: 20px; padding-bottom: 10px;">
+            <h1 style="color: #e60000; margin: 0;">4-RACE - MAINTENANCE</h1>
+            <p style="margin: 0;">Voiture : <strong>${voitureCourante}</strong> | Date : ${new Date().toLocaleDateString()}</p>
+        </div>
+    `;
+    container.prepend(header);
+    // --------------------------------------------------
+
+    // 2. Traitement des tables
     container.querySelectorAll('table').forEach(table => {
-        // Ajout des colonnes au header
         const headerRow = table.querySelector('thead tr');
         headerRow.innerHTML = '<th>Pièce</th><th>Quotas</th><th>Status</th><th>Temps restant</th><th>Réf</th><th>Prix</th>';
 
         table.querySelectorAll('tbody tr').forEach(tr => {
-            // Suppression de la ligne "Ajouter une pièce"
+            // Supprimer le bouton "Ajouter"
             if (tr.querySelector('.btn-add-piece')) {
                 tr.remove();
                 return;
@@ -659,19 +669,27 @@ window.genererPDF = function(mode) {
             const nomCell = tr.querySelector('td strong');
             const nomPiece = nomCell ? nomCell.textContent.trim() : '';
             const data = (typeof donneesTechniques !== 'undefined') ? donneesTechniques[nomPiece] : null;
+            const statusTexte = tr.querySelector('.status').textContent;
+
+            // Logique de filtrage
+            if (mode === 'urgent' && statusTexte === 'OK') {
+                tr.remove();
+                return;
+            }
 
             // Calcul du total
-            if (tr.querySelector('.status-danger') && data) prixTotal += data.prix;
+            if ((statusTexte === 'Changement' || statusTexte === 'À prévoir') && data) {
+                prixTotal += data.prix;
+            }
 
-            // Réécriture propre de la ligne : on ignore les éléments interactifs (input, boutons)
-            const quota = tr.querySelectorAll('td')[2].textContent; // Récupère le texte sans l'input
-            const status = tr.querySelector('.status').textContent;
+            // Réécriture propre de la ligne
+            const quota = tr.querySelectorAll('td')[1].textContent; 
             const tempsRestant = tr.querySelectorAll('td')[3].textContent;
 
             tr.innerHTML = `
                 <td><strong>${nomPiece}</strong></td>
                 <td>${quota}</td>
-                <td>${status}</td>
+                <td>${statusTexte}</td>
                 <td>${tempsRestant}</td>
                 <td>${data ? data.ref : '-'}</td>
                 <td>${data ? data.prix.toFixed(2) + ' €' : '-'}</td>
@@ -679,18 +697,18 @@ window.genererPDF = function(mode) {
         });
     });
 
-    // 3. Finalisation du PDF
-    if (mode === 'urgent') {
-        const totalDiv = document.createElement('div');
-        totalDiv.innerHTML = `<h3 style="text-align: right;">Total : ${prixTotal.toFixed(2)} €</h3>`;
-        container.appendChild(totalDiv);
-    }
+    // 3. Ajout du total estimé
+    const totalDiv = document.createElement('div');
+    totalDiv.style.marginTop = "20px";
+    totalDiv.style.textAlign = "right";
+    totalDiv.innerHTML = `<h3>Total estimé (${mode}) : ${prixTotal.toFixed(2)} €</h3>`;
+    container.appendChild(totalDiv);
 
+    // 4. Génération
     const opt = { 
         margin: 10, 
-        filename: `Maintenance_${mode}.pdf`, 
-        html2canvas: { scale: 2 },
-        pagebreak: { mode: 'avoid-all' }
+        filename: `Maintenance_${mode}_${voitureCourante}.pdf`, 
+        html2canvas: { scale: 2 } 
     };
     html2pdf().set(opt).from(container).save();
 };
