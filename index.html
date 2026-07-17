@@ -639,35 +639,37 @@ function rafraichirCheckboxes() {
         update(ref(db, `hangar/${voitureCourante}`), { historique: hist });
     };
 window.genererPDF = function(mode) {
-    // 1. Clonage propre du container pour ne pas modifier l'affichage réel
-    const container = document.getElementById('maintenance-tables-container').cloneNode(true);
+    console.log("Tentative de génération PDF...");
+    const source = document.getElementById('maintenance-tables-container');
+    if (!source) {
+        console.error("Erreur : Impossible de trouver le container de maintenance");
+        return;
+    }
+    
+    // Clonage pour ne pas modifier l'affichage réel
+    const container = source.cloneNode(true);
     let prixTotal = 0;
 
-    // 2. Traitement de chaque table trouvée dans le clone
+    // Traitement des tables
     container.querySelectorAll('table').forEach(table => {
-        // Ajout des colonnes au header
         const headerRow = table.querySelector('thead tr');
-        headerRow.innerHTML += '<th>Réf</th><th>Prix</th>';
+        if(headerRow) headerRow.innerHTML += '<th>Réf</th><th>Prix</th>';
 
-        // Traitement des lignes
         table.querySelectorAll('tbody tr').forEach(tr => {
             const nomCell = tr.querySelector('td strong');
             if (!nomCell) {
-                // Si c'est la ligne du bouton "Ajouter une pièce", on ajoute deux cellules vides
                 tr.innerHTML += '<td></td><td></td>';
                 return;
             }
 
             const nomPiece = nomCell.textContent.trim();
-            // On cherche la correspondance dans ta base technique
-            const data = donneesTechniques[nomPiece];
+            // Utilisation sécurisée de donneesTechniques
+            const data = (typeof donneesTechniques !== 'undefined') ? donneesTechniques[nomPiece] : null;
             
-            // Calcul du total si la pièce est à changer (statut danger)
             if (tr.querySelector('.status-danger') && data) {
                 prixTotal += data.prix;
             }
 
-            // Ajout des cellules Réf et Prix (avec "-" si info manquante)
             const refTexte = data ? data.ref : '-';
             const prixTexte = data ? data.prix.toFixed(2) + ' €' : '-';
             
@@ -675,33 +677,11 @@ window.genererPDF = function(mode) {
         });
     });
 
-    // 3. Ajout du total si mode "urgent"
-    if (mode === 'urgent') {
-        const totalDiv = document.createElement('div');
-        totalDiv.style.marginTop = "20px";
-        totalDiv.innerHTML = `<h3 style="color: #e60000; text-align: right;">Total Estimé des pièces urgentes : ${prixTotal.toFixed(2)} €</h3>`;
-        container.appendChild(totalDiv);
-    }
-
-    // 4. Paramètres de génération
-    const opt = { 
-        margin: 10, 
-        filename: `Maintenance_${mode}_${voitureCourante}.pdf`, 
-        html2canvas: { scale: 2 }, 
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
-    };
-
+    // ... (suite de la logique html2pdf)
+    const opt = { margin: 10, filename: `Maintenance_${mode}_${voitureCourante}.pdf`, html2canvas: { scale: 2 } };
     html2pdf().set(opt).from(container).save();
 };
-    // 4. Génération
-    html2pdf().set(opt).from(container).save().then(() => {
-        // 5. On remet tout comme avant
-        elementsACacher.forEach(el => el.style.display = '');
-        toutesLesLignes.forEach(tr => tr.style.display = '');
-        document.getElementById("pdf-header").remove();
-    });
-};
-
+    
 function convertirEnDate(dateStr) {
     if (!dateStr) return new Date(0);
 
