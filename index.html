@@ -639,46 +639,59 @@ function rafraichirCheckboxes() {
         update(ref(db, `hangar/${voitureCourante}`), { historique: hist });
     };
 window.genererPDF = function(mode) {
-    console.log("Tentative de génération PDF...");
-    const source = document.getElementById('maintenance-tables-container');
-    if (!source) {
-        console.error("Erreur : Impossible de trouver le container de maintenance");
-        return;
-    }
-    
-    // Clonage pour ne pas modifier l'affichage réel
-    const container = source.cloneNode(true);
+    // 1. Clonage du container
+    const container = document.getElementById('maintenance-tables-container').cloneNode(true);
     let prixTotal = 0;
 
-    // Traitement des tables
+    // 2. Nettoyage du clone pour le PDF
     container.querySelectorAll('table').forEach(table => {
+        // Ajout des colonnes au header
         const headerRow = table.querySelector('thead tr');
-        if(headerRow) headerRow.innerHTML += '<th>Réf</th><th>Prix</th>';
+        headerRow.innerHTML = '<th>Pièce</th><th>Quotas</th><th>Status</th><th>Temps restant</th><th>Réf</th><th>Prix</th>';
 
         table.querySelectorAll('tbody tr').forEach(tr => {
-            const nomCell = tr.querySelector('td strong');
-            if (!nomCell) {
-                tr.innerHTML += '<td></td><td></td>';
+            // Suppression de la ligne "Ajouter une pièce"
+            if (tr.querySelector('.btn-add-piece')) {
+                tr.remove();
                 return;
             }
 
-            const nomPiece = nomCell.textContent.trim();
-            // Utilisation sécurisée de donneesTechniques
+            const nomCell = tr.querySelector('td strong');
+            const nomPiece = nomCell ? nomCell.textContent.trim() : '';
             const data = (typeof donneesTechniques !== 'undefined') ? donneesTechniques[nomPiece] : null;
-            
-            if (tr.querySelector('.status-danger') && data) {
-                prixTotal += data.prix;
-            }
 
-            const refTexte = data ? data.ref : '-';
-            const prixTexte = data ? data.prix.toFixed(2) + ' €' : '-';
-            
-            tr.innerHTML += `<td>${refTexte}</td><td>${prixTexte}</td>`;
+            // Calcul du total
+            if (tr.querySelector('.status-danger') && data) prixTotal += data.prix;
+
+            // Réécriture propre de la ligne : on ignore les éléments interactifs (input, boutons)
+            const quota = tr.querySelectorAll('td')[2].textContent; // Récupère le texte sans l'input
+            const status = tr.querySelector('.status').textContent;
+            const tempsRestant = tr.querySelectorAll('td')[3].textContent;
+
+            tr.innerHTML = `
+                <td><strong>${nomPiece}</strong></td>
+                <td>${quota}</td>
+                <td>${status}</td>
+                <td>${tempsRestant}</td>
+                <td>${data ? data.ref : '-'}</td>
+                <td>${data ? data.prix.toFixed(2) + ' €' : '-'}</td>
+            `;
         });
     });
 
-    // ... (suite de la logique html2pdf)
-    const opt = { margin: 10, filename: `Maintenance_${mode}_${voitureCourante}.pdf`, html2canvas: { scale: 2 } };
+    // 3. Finalisation du PDF
+    if (mode === 'urgent') {
+        const totalDiv = document.createElement('div');
+        totalDiv.innerHTML = `<h3 style="text-align: right;">Total : ${prixTotal.toFixed(2)} €</h3>`;
+        container.appendChild(totalDiv);
+    }
+
+    const opt = { 
+        margin: 10, 
+        filename: `Maintenance_${mode}.pdf`, 
+        html2canvas: { scale: 2 },
+        pagebreak: { mode: 'avoid-all' }
+    };
     html2pdf().set(opt).from(container).save();
 };
     
