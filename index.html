@@ -707,10 +707,11 @@ window.genererPDF = function(mode) {
     });
 
     // 3. Ajout du total estimé
-    const totalDiv = document.createElement('div');
-    totalDiv.style.marginTop = "20px";
+   const totalDiv = document.createElement('div');
+    totalDiv.style.marginTop = "30px";
     totalDiv.style.textAlign = "right";
-    totalDiv.innerHTML = `<h3>Total estimé (${mode}) : ${prixTotal.toFixed(2)} €</h3>`;
+    totalDiv.style.paddingRight = "10px"; // Ajoute une marge à droite
+    totalDiv.innerHTML = `<h3 style="margin: 0;">Total estimé (${mode}) : ${prixTotal.toFixed(2)} €</h3>`;
     container.appendChild(totalDiv);
 
     // 4. Génération
