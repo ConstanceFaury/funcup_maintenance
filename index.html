@@ -587,30 +587,30 @@ function rafraichirCheckboxes() {
         }
     };
 
- window.ajouterPiecePourCategorie = (cat) => {
-    // Vérification de sécurité
-    if (typeof db === 'undefined') {
-        console.error("Erreur : La base de données (db) n'est pas encore initialisée !");
-        alert("Le système est en cours de chargement, réessaie dans une seconde.");
-        return;
-    }
+window.ajouterPiecePourCategorie = (cat) => {
+        if (typeof db === 'undefined') {
+            alert("Le système est en cours de chargement, réessaie dans une seconde.");
+            return;
+        }
 
-    const nom = prompt("Nom de la pièce :");
-    if (!nom) return;
-    const lim = parseFloat(prompt("Limite heures :")) || 100;
-    
-    push(ref(db, `hangar/${voitureCourante}/pieces/`), { 
-        cat: cat, 
-        nom: nom, 
-        limite: lim, 
-        heuresActuelles: 0, 
-        dernierChangement: "" 
-    }).then(() => {
-        console.log("Pièce ajoutée avec succès");
-        // Rafraîchissement forcé
-        if (typeof majAffichage === 'function') majAffichage();
-    });
-};
+        const nom = prompt("Nom de la pièce :");
+        if (!nom) return;
+        const lim = parseFloat(prompt("Limite heures :")) || 100;
+        const refPiece = prompt("Référence de la pièce (ex: MO123) :") || "-";
+        const prixPiece = parseFloat(prompt("Prix de la pièce en € :")) || 0;
+        
+        push(ref(db, `hangar/${voitureCourante}/pieces/`), { 
+            cat: cat, 
+            nom: nom, 
+            limite: lim, 
+            heuresActuelles: 0, 
+            dernierChangement: "",
+            ref: refPiece,
+            prix: prixPiece
+        }).then(() => {
+            if (typeof majAffichage === 'function') majAffichage();
+        });
+    };
     
    window.supprimerPiece = (id) => {
         if (confirm("Supprimer cette pièce ?")) {
