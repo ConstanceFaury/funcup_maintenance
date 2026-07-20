@@ -327,6 +327,25 @@
             background-color: var(--warning); /* Orange défini dans ton :root */
             color: white;
         }
+
+        @media print {
+            /* Empêche de couper les lignes de tableaux en deux */
+            tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            /* Empêche les titres de catégorie de se retrouver seuls tout en bas de page */
+            .category-header {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+        
+            /* Garde la carte ou le conteneur propre */
+            table {
+                page-break-inside: auto;
+            }
+        }
     </style>
 </head>
 <body>
