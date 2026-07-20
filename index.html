@@ -670,31 +670,32 @@ window.genererPDF = function(mode) {
                 return;
             }
 
-const nomCell = tr.querySelector('td strong');
+            const nomCell = tr.querySelector('td strong');
             const nomPiece = nomCell ? nomCell.textContent.trim() : '';
             
-            // Récupération de la pièce dans les données Firebase de la voiture courante
+            // 1. Chercher d'abord dans Firebase (pièce ajoutée ou modifiée)
             const pieces = hangar[voitureCourante].pieces || {};
             const pieceObj = Object.values(pieces).find(p => p.nom === nomPiece);
             
-            // 1. Récupération du statut nettoyé
-            const statusTexte = tr.querySelector('.status').textContent.trim();
+            // 2. Si pas trouvé ou vide, chercher dans le dictionnaire de secours "donneesTechniques"
+            const dataSecours = (typeof donneesTechniques !== 'undefined') ? donneesTechniques[nomPiece] : null;
             
-            // 2. Logique de filtrage et calcul robuste
+            const refFinal = (pieceObj && pieceObj.ref && pieceObj.ref !== "-") ? pieceObj.ref : (dataSecours ? dataSecours.ref : '-');
+            const prixFinal = (pieceObj && pieceObj.prix) ? parseFloat(pieceObj.prix) : (dataSecours ? dataSecours.prix : 0);
+            
+            // 3. Récupération du statut nettoyé
+            const statusTexte = tr.querySelector('.status').textContent.trim();
             const estUrgent = statusTexte.includes('Changement') || statusTexte.includes('À prévoir');
             
-            // Si mode 'urgent', on retire tout ce qui n'est pas "Changement" ou "À prévoir"
             if (mode === 'urgent' && !estUrgent) {
                 tr.remove();
                 return;
             }
             
-            // 3. Calcul du prix (si la pièce est "urgente" et qu'on a le prix)
-            if (estUrgent && pieceObj && pieceObj.prix) {
-                prixTotal += parseFloat(pieceObj.prix);
+            if (estUrgent && prixFinal) {
+                prixTotal += prixFinal;
             }
 
-            // Réécriture propre de la ligne
             const quota = tr.querySelectorAll('td')[1].textContent; 
             const tempsRestant = tr.querySelectorAll('td')[3].textContent;
 
@@ -703,8 +704,8 @@ const nomCell = tr.querySelector('td strong');
                 <td>${quota}</td>
                 <td>${statusTexte}</td>
                 <td>${tempsRestant}</td>
-                <td>${pieceObj && pieceObj.ref ? pieceObj.ref : '-'}</td>
-                <td>${pieceObj && pieceObj.prix ? parseFloat(pieceObj.prix).toFixed(2) + ' €' : '-'}</td>
+                <td>${refFinal}</td>
+                <td>${prixFinal ? prixFinal.toFixed(2) + ' €' : '-'}</td>
             `;
         });
     });
