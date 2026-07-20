@@ -670,9 +670,12 @@ window.genererPDF = function(mode) {
                 return;
             }
 
-            const nomCell = tr.querySelector('td strong');
+const nomCell = tr.querySelector('td strong');
             const nomPiece = nomCell ? nomCell.textContent.trim() : '';
-            const data = (typeof donneesTechniques !== 'undefined') ? donneesTechniques[nomPiece] : null;
+            
+            // Récupération de la pièce dans les données Firebase de la voiture courante
+            const pieces = hangar[voitureCourante].pieces || {};
+            const pieceObj = Object.values(pieces).find(p => p.nom === nomPiece);
             
             // 1. Récupération du statut nettoyé
             const statusTexte = tr.querySelector('.status').textContent.trim();
@@ -687,8 +690,8 @@ window.genererPDF = function(mode) {
             }
             
             // 3. Calcul du prix (si la pièce est "urgente" et qu'on a le prix)
-            if (estUrgent && data) {
-                prixTotal += data.prix;
+            if (estUrgent && pieceObj && pieceObj.prix) {
+                prixTotal += parseFloat(pieceObj.prix);
             }
 
             // Réécriture propre de la ligne
@@ -700,8 +703,8 @@ window.genererPDF = function(mode) {
                 <td>${quota}</td>
                 <td>${statusTexte}</td>
                 <td>${tempsRestant}</td>
-                <td>${data ? data.ref : '-'}</td>
-                <td>${data ? data.prix.toFixed(2) + ' €' : '-'}</td>
+                <td>${pieceObj && pieceObj.ref ? pieceObj.ref : '-'}</td>
+                <td>${pieceObj && pieceObj.prix ? parseFloat(pieceObj.prix).toFixed(2) + ' €' : '-'}</td>
             `;
         });
     });
