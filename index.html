@@ -33,7 +33,7 @@
         .container { 
             max-width: 1400px; 
             margin: 0 auto; 
-            padding: 0 20px; /* Ajoute un petit espace sur les côtés pour mobile */
+            padding: 0 20px; 
             box-sizing: border-box;
         }
                
@@ -46,15 +46,13 @@
             letter-spacing: 1px;
         }
         
-        /* Couleur orange spécifique pour le 4 */
         .main-title .orange {
-            color: #e60000; /* Remplace par le code orange exact si nécessaire */
+            color: #e60000; 
         }
         
-        /* Style pour le sous-titre */
         .subtitle {
             margin: 0;
-            color: #6c757d; /* Gris pour le sous-titre */
+            color: #6c757d; 
             font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -63,7 +61,7 @@
         header {
             background-color: var(--dark);
             color: white;
-            padding: 20px; /* Réduit un peu le padding pour mobile */
+            padding: 20px; 
             border-radius: 10px;
             margin-bottom: 25px;
             border-left: 6px solid var(--primary);
@@ -73,9 +71,8 @@
             align-items: center;
             gap: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            /* AJOUTE ÇA : */
             width: 100%;
-            box-sizing: border-box; /* Crucial pour que le padding ne rajoute pas de largeur */
+            box-sizing: border-box; 
         }
         header h1 { margin: 0 0 5px 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
         header p { margin: 0; color: #aaa; font-size: 14px; }
@@ -85,13 +82,13 @@
             padding: 10px;
             border-radius: 8px;
             border: 1px solid #333;
-            flex: 1 1 100%; /* Sur mobile, il prendra toute la ligne du header */
+            flex: 1 1 100%; 
             text-align: center;
         }
         
         @media (min-width: 768px) {
             .selector-box {
-                flex: 0 0 auto; /* Sur PC, il reprend sa taille normale à droite */
+                flex: 0 0 auto; 
                 text-align: right;
             }
         }
@@ -112,15 +109,15 @@
 
         @media (max-width: 600px) {
             header {
-                justify-content: center; /* Centre les éléments sur mobile */
+                justify-content: center; 
                 text-align: center;
             }
             .selector-box {
-                width: 100%; /* Le sélecteur prend toute la largeur */
+                width: 100%; 
                 text-align: center;
             }
             .selector-box select {
-                width: 100%; /* S'adapte à l'écran */
+                width: 100%; 
             }
         }
 
@@ -283,7 +280,7 @@
             font-size: 12px;
             display: none;
         }
-     /* Nettoyage total du conteneur */
+        
     .checkbox-row {
         display: flex !important;
         flex-direction: row !important;
@@ -293,20 +290,19 @@
         border-bottom: 1px solid #ddd !important;
     }
     
-    /* On force la case à ne pas prendre 100% de la largeur */
     .checkbox-row input[type="checkbox"] {
         width: 20px !important;
         height: 20px !important;
-        flex: 0 0 20px !important; /* Force la taille de la case */
+        flex: 0 0 20px !important; 
         margin: 0 !important;
     }
     
     .checkbox-row span {
         font-size: 14px;
         font-weight: 600;
-}
+    }
 
-       @media (max-width: 600px) {
+    @media (max-width: 600px) {
         header { 
             display: flex !important;
             flex-direction: column !important; 
@@ -323,34 +319,15 @@
         }
     }
 
-        .status-warn { 
-            background-color: var(--warning); /* Orange défini dans ton :root */
-            color: white;
-        }
-
-        @media print {
-            /* Empêche de couper les lignes de tableaux en deux */
-            tr {
-                page-break-inside: avoid;
-                break-inside: avoid;
-            }
-            
-            /* Empêche les titres de catégorie de se retrouver seuls tout en bas de page */
-            .category-header {
-                page-break-after: avoid;
-                break-after: avoid;
-            }
-        
-            /* Garde la carte ou le conteneur propre */
-            table {
-                page-break-inside: auto;
-            }
-        }
+    @media print {
+        tr { page-break-inside: avoid; break-inside: avoid; }
+        .category-header { page-break-after: avoid; break-after: avoid; }
+        table { page-break-inside: auto; }
+    }
     </style>
 </head>
 <body>
 
-   
 <div class="container">
       
     <header>
@@ -367,9 +344,10 @@
         </div>
     </header>
     
-<div style="margin: 20px 0; display: flex; gap: 10px;">
-        <button onclick="genererPDF('tout')" style="background-color: var(--moteur-color);">📄 PDF Liste Complète</button>
-        <button onclick="genererPDF('urgent')" style="background-color: var(--danger);">🚨 PDF Pièces à changer (Urgent)</button>
+    <div style="margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+        <button onclick="genererPDF('tout')" style="background-color: var(--moteur-color); width: auto;">📄 PDF Liste Complète</button>
+        <button onclick="genererPDF('urgent')" style="background-color: var(--danger); width: auto;">🚨 PDF Pièces à changer (Urgent)</button>
+        <button onclick="genererPDFHistorique()" style="background-color: var(--warning); width: auto; color: white;">🕒 PDF Historique des pièces</button>
     </div>
 
     <div class="grid-main">
@@ -426,7 +404,7 @@
                 </div>
                 
                 <div id="maintenance-tables-container">
-                    </div>
+                </div>
             </div>
 
             <div class="card">
@@ -455,7 +433,6 @@
 </div>
 
 <script type="module">
-    // 1. Tous les imports regroupés proprement en haut
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue, update, remove, push, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -473,66 +450,57 @@
     const db = getDatabase(app);
 
     const cataloguePiecesStandard = [
-        { cat: "Moteur", nom: "Moteur VW Evo 3 (Révision Générale)", heuresActuelles: 0, limite: 150, dernierChangement: "" },
-        { cat: "Moteur", nom: "Bougies", heuresActuelles: 0, limite: 100, dernierChangement: "" },
-        { cat: "Moteur", nom: "Bobine", heuresActuelles: 0, limite: 150, dernierChangement: "" },
-        { cat: "Moteur", nom: "Démarreur", heuresActuelles: 0, limite: 400, dernierChangement: "" },
-        { cat: "Moteur", nom: "Alternateur", heuresActuelles: 0, limite: 400, dernierChangement: "" },
-        { cat: "Moteur", nom: "Huile et filtre à huile", heuresActuelles: 0, limite: 25, dernierChangement: "" },
-        { cat: "Moteur", nom: "Filtre à essence", heuresActuelles: 0, limite: 50, dernierChangement: "" },
-        { cat: "Moteur", nom: "Pompe à Essence", heuresActuelles: 0, limite: 200, dernierChangement: "" },
-        { cat: "Moteur", nom: "Filtre à air", heuresActuelles: 0, limite: 100, dernierChangement: "" },
-        { cat: "Moteur", nom: "Régulateur de pression essence", heuresActuelles: 0, limite: 100, dernierChangement: "" },
-        { cat: "Moteur", nom: "Vase expansion et bouchon", heuresActuelles: 0, limite: 100, dernierChangement: "" },
-        { cat: "Moteur", nom: "Courroie d'accessoires", heuresActuelles: 0, limite: 100, dernierChangement: "" },
-        { cat: "Transmission", nom: "Boîte de Vitesses Sadev (Révision)", heuresActuelles: 0, limite: 90, dernierChangement: "" },
-        { cat: "Transmission", nom: "Huile de boîte", heuresActuelles: 0, limite: 25, dernierChangement: "" },
-        { cat: "Transmission", nom: "Disque d'embrayage", heuresActuelles: 0, limite: 200, dernierChangement: "" },
-        { cat: "Transmission", nom: "Mécanisme d'embrayage", heuresActuelles: 0, limite: 400, dernierChangement: "" },
-        { cat: "Transmission", nom: "Coupelle de pompe", heuresActuelles: 0, limite: 100, dernierChangement: "" },
-        { cat: "Transmission", nom: "Butée (coupelle et roulement)", heuresActuelles: 0, limite: 100, dernierChangement: "" },
-        { cat: "Transmission", nom: "Cardan droit", heuresActuelles: 0, limite: 50, dernierChangement: "" },
-        { cat: "Transmission", nom: "Cardan gauche", heuresActuelles: 0, limite: 50, dernierChangement: "" },
-        { cat: "Transmission", nom: "Groupe paddle shift", heuresActuelles: 0, limite: 150, dernierChangement: "" },
-        { cat: "Transmission", nom: "Vérin paddle shift", heuresActuelles: 0, limite: 150, dernierChangement: "" },
-        { cat: "Train avant", nom: "Roulement de roue AVD", heuresActuelles: 0, limite: 75, dernierChangement: "" },
-        { cat: "Train avant", nom: "Roulement de roue AVG", heuresActuelles: 0, limite: 75, dernierChangement: "" },
-        { cat: "Train avant", nom: "Rotule inférieure de pivot D", heuresActuelles: 0, limite: 50, dernierChangement: "" },
-        { cat: "Train avant", nom: "Rotule inférieure de pivot G", heuresActuelles: 0, limite: 50, dernierChangement: "" },
-        { cat: "Train avant", nom: "Rotule supérieure amortisseur D", heuresActuelles: 0, limite: 150, dernierChangement: "" },
-        { cat: "Train avant", nom: "Rotule supérieure amortisseur G", heuresActuelles: 0, limite: 150, dernierChangement: "" },
-        { cat: "Train avant", nom: "Rotule de direction D", heuresActuelles: 0, limite: 75, dernierChangement: "" },
-        { cat: "Train avant", nom: "Rotule de direction G", heuresActuelles: 0, limite: 75, dernierChangement: "" },
-        { cat: "Train avant", nom: "Barre de direction D", heuresActuelles: 0, limite: 150, dernierChangement: "" },
-        { cat: "Train avant", nom: "Barre de direction G", heuresActuelles: 0, limite: 150, dernierChangement: "" },
-        { cat: "Train avant", nom: "Amortisseur D", heuresActuelles: 0, limite: 80, dernierChangement: "" },
-        { cat: "Train avant", nom: "Amortisseur G", heuresActuelles: 0, limite: 80, dernierChangement: "" },
-        { cat: "Train avant", nom: "Faux cardan D", heuresActuelles: 0, limite: 80, dernierChangement: "" },
-        { cat: "Train avant", nom: "Faux cardan G", heuresActuelles: 0, limite: 80, dernierChangement: "" },
-        { cat: "Train avant", nom: "Crémaillère", heuresActuelles: 0, limite: 80, dernierChangement: "" },
-        { cat: "Train avant", nom: "Barreau de direction", heuresActuelles: 0, limite: 80, dernierChangement: "" },
-        { cat: "Train avant", nom: "Porte moyeu", heuresActuelles: 0, limite: 80, dernierChangement: "" },
-        { cat: "Train arrière", nom: "Roulement de roue ARD", heuresActuelles: 0, limite: 75, dernierChangement: "" },
-        { cat: "Train arrière", nom: "Roulement de roue ARG", heuresActuelles: 0, limite: 75, dernierChangement: "" },
-        { cat: "Train arrière", nom: "Rotule inférieure de pivot D", heuresActuelles: 0, limite: 50, dernierChangement: "" },
-        { cat: "Train arrière", nom: "Rotule inférieure de pivot G", heuresActuelles: 0, limite: 50, dernierChangement: "" },
-        { cat: "Train arrière", nom: "Rotule supérieure amortisseur D", heuresActuelles: 0, limite: 150, dernierChangement: "" },
-        { cat: "Train arrière", nom: "Rotule supérieure amortisseur G", heuresActuelles: 0, limite: 150, dernierChangement: "" },
-        { cat: "Train arrière", nom: "Rotule de direction D", heuresActuelles: 0, limite: 75, dernierChangement: "" },
-        { cat: "Train arrière", nom: "Rotule de direction G", heuresActuelles: 0, limite: 75, dernierChangement: "" },
-        { cat: "Train arrière", nom: "Barre de direction D", heuresActuelles: 0, limite: 150, dernierChangement: "" },
-        { cat: "Train arrière", nom: "Barre de direction G", heuresActuelles: 0, limite: 150, dernierChangement: "" },
-        { cat: "Train arrière", nom: "Amortisseur D", heuresActuelles: 0, limite: 80, dernierChangement: "" },
-        { cat: "Train arrière", nom: "Amortisseur G", heuresActuelles: 0, limite: 80, dernierChangement: "" },
-        { cat: "Frein", nom: "Coupelles d'étriers", heuresActuelles: 0, limite: 200, dernierChangement: "" },
-        { cat: "Frein", nom: "Coupelles de pompe AVANT", heuresActuelles: 0, limite: 100, dernierChangement: "" },
-        { cat: "Frein", nom: "Coupelles de pompe ARRIERE", heuresActuelles: 0, limite: 100, dernierChangement: "" },
-        { cat: "Frein", nom: "Pédalier", heuresActuelles: 0, limite: 100, dernierChangement: "" },
-        { cat: "Frein", nom: "Coupelles d'étriers", heuresActuelles: 0, limite: 200, dernierChangement: "" },
-        { cat: "Habitacle", nom: "Siège Baquet", heuresActuelles: 0, limite: 0, dernierChangement: "", note: "" },
-        { cat: "Habitacle", nom: "Harnais", heuresActuelles: 0, limite: 0, dernierChangement: "", note: "" },
-        { cat: "Habitacle", nom: "Extincteur", heuresActuelles: 0, limite: 0, dernierChangement: "", note: "" }
+        { cat: "Moteur", nom: "Moteur VW Evo 3 (Révision Générale)", heuresActuelles: 0, limite: 150, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Moteur", nom: "Bougies", heuresActuelles: 0, limite: 100, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Moteur", nom: "Démarreur", heuresActuelles: 0, limite: 400, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Moteur", nom: "Alternateur", heuresActuelles: 0, limite: 400, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Moteur", nom: "Huile et filtre à huile", heuresActuelles: 0, limite: 25, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Moteur", nom: "Filtre à essence", heuresActuelles: 0, limite: 50, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Moteur", nom: "Pompe à Essence", heuresActuelles: 0, limite: 200, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Moteur", nom: "Filtre à air", heuresActuelles: 0, limite: 100, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Moteur", nom: "Bobine", heuresActuelles: 0, limite: 150, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Moteur", nom: "Régulateur de pression essence", heuresActuelles: 0, limite: 100, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Moteur", nom: "Vase expansion et bouchon", heuresActuelles: 0, limite: 100, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Moteur", nom: "Courroie d'accessoires", heuresActuelles: 0, limite: 100, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Transmission", nom: "Boîte de Vitesses Sadev (Révision)", heuresActuelles: 0, limite: 90, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Transmission", nom: "Disque d'embrayage", heuresActuelles: 0, limite: 200, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Transmission", nom: "Mécanisme d'embrayage", heuresActuelles: 0, limite: 400, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Transmission", nom: "Coupelle de pompe", heuresActuelles: 0, limite: 100, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Transmission", nom: "Butée (coupelle et roulement)", heuresActuelles: 0, limite: 100, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Transmission", nom: "Cardan droit", heuresActuelles: 0, limite: 50, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Transmission", nom: "Cardan gauche", heuresActuelles: 0, limite: 50, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Transmission", nom: "Groupe paddle shift", heuresActuelles: 0, limite: 150, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Transmission", nom: "Vérin paddle shift", heuresActuelles: 0, limite: 150, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train avant", nom: "Roulement de roue AVD", heuresActuelles: 0, limite: 75, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train avant", nom: "Roulement de roue AVG", heuresActuelles: 0, limite: 75, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train avant", nom: "Rotule inférieure de pivot D", heuresActuelles: 0, limite: 50, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train avant", nom: "Rotule inférieure de pivot G", heuresActuelles: 0, limite: 50, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train avant", nom: "Rotule supérieure amortisseur D", heuresActuelles: 0, limite: 150, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train avant", nom: "Rotule supérieure amortisseur G", heuresActuelles: 0, limite: 150, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train avant", nom: "Rotule de direction D", heuresActuelles: 0, limite: 75, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train avant", nom: "Rotule de direction G", heuresActuelles: 0, limite: 75, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train avant", nom: "Barre de direction D", heuresActuelles: 0, limite: 150, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train avant", nom: "Barre de direction G", heuresActuelles: 0, limite: 150, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train avant", nom: "Amortisseur D", heuresActuelles: 0, limite: 80, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train avant", nom: "Amortisseur G", heuresActuelles: 0, limite: 80, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train arrière", nom: "Roulement de roue ARD", heuresActuelles: 0, limite: 75, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train arrière", nom: "Roulement de roue ARG", heuresActuelles: 0, limite: 75, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train arrière", nom: "Rotule inférieure de pivot D", heuresActuelles: 0, limite: 50, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train arrière", nom: "Rotule inférieure de pivot G", heuresActuelles: 0, limite: 50, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train arrière", nom: "Rotule supérieure amortisseur D", heuresActuelles: 0, limite: 150, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train arrière", nom: "Rotule supérieure amortisseur G", heuresActuelles: 0, limite: 150, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train arrière", nom: "Rotule de direction D", heuresActuelles: 0, limite: 75, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train arrière", nom: "Rotule de direction G", heuresActuelles: 0, limite: 75, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train arrière", nom: "Barre de direction D", heuresActuelles: 0, limite: 150, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train arrière", nom: "Barre de direction G", heuresActuelles: 0, limite: 150, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train arrière", nom: "Amortisseur D", heuresActuelles: 0, limite: 80, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Train arrière", nom: "Amortisseur G", heuresActuelles: 0, limite: 80, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Freins", nom: "Coupelles d'étriers", heuresActuelles: 0, limite: 200, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Habitacle", nom: "Siège Baquet", heuresActuelles: 0, limite: 0, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Habitacle", nom: "Harnais", heuresActuelles: 0, limite: 0, dernierChangement: "", note: "", historiqueChangements: [] },
+        { cat: "Habitacle", nom: "Extincteur", heuresActuelles: 0, limite: 0, dernierChangement: "", note: "", historiqueChangements: [] }
     ];
+
     const donneesTechniques = {
         "Bougies": { ref: "MO239", prix: 23.76 },
         "Démarreur": { ref: "MO15", prix: 179.71 },
@@ -569,7 +537,7 @@
         "Amortisseur G": { ref: "S013", prix: 765.09 }
     };
 
- let hangar = {};
+    let hangar = {};
     let voitureCourante = "";
 
     function obtenirDateDuJour() { return new Date().toISOString().split('T')[0]; }
@@ -677,7 +645,6 @@
         }
     };
 
-    // --- NOUVEAU : GESTION DE L'HISTORIQUE ---
     window.voirHistoriquePiece = (id) => {
         const piece = hangar[voitureCourante].pieces[id];
         if(!piece) return;
@@ -705,7 +672,6 @@
         const piece = hangar[voitureCourante].pieces[id];
         let hist = piece.historiqueChangements ? [...piece.historiqueChangements] : [];
         
-        // Ajout de la nouvelle date à l'historique (sans doublon immédiat)
         if (hist[hist.length - 1] !== date) {
             hist.push(date);
         }
@@ -721,12 +687,10 @@
         const piece = hangar[voitureCourante].pieces[id];
         let hist = piece.historiqueChangements ? [...piece.historiqueChangements] : [];
         
-        // Si la dernière date de l'historique correspond à celle qu'on annule, on la retire
         if (hist.length > 0 && hist[hist.length - 1] === piece.dernierChangement) {
             hist.pop();
         }
         
-        // On récupère la date d'avant pour la restaurer (ou rien s'il n'y en a pas)
         let datePrecedente = hist.length > 0 ? hist[hist.length - 1] : "";
 
         update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { 
@@ -734,7 +698,6 @@
             historiqueChangements: hist
         });
     };
-    // ------------------------------------------
 
     window.supprimerCourse = function(index) {
         if (!confirm("Supprimer cette session ?")) return;
@@ -853,6 +816,103 @@
         
         html2pdf().set(opt).from(container).save();
     };
+
+    // --- NOUVEAU : Fonction pour générer le PDF de l'historique complet ---
+    window.genererPDFHistorique = function() {
+        if (!voitureCourante || !hangar[voitureCourante]) return;
+        
+        const container = document.createElement('div');
+        container.style.padding = "20px";
+        container.style.fontFamily = "system-ui, sans-serif";
+
+        const header = document.createElement('div');
+        header.innerHTML = `
+            <div style="border-bottom: 2px solid #e60000; margin-bottom: 20px; padding-bottom: 10px;">
+                <h1 style="color: #e60000; margin: 0;">4-RACE - HISTORIQUE DES CHANGEMENTS</h1>
+                <p style="margin: 0;">Voiture : <strong>${voitureCourante}</strong> | Date : ${new Date().toLocaleDateString()}</p>
+            </div>
+        `;
+        container.appendChild(header);
+
+        const table = document.createElement('table');
+        table.style.width = "100%";
+        table.style.borderCollapse = "collapse";
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th style="border-bottom: 2px solid #ddd; padding: 8px; text-align: left; background-color: #fafafa; font-size: 13px; color: #666; text-transform: uppercase;">Catégorie</th>
+                    <th style="border-bottom: 2px solid #ddd; padding: 8px; text-align: left; background-color: #fafafa; font-size: 13px; color: #666; text-transform: uppercase;">Pièce</th>
+                    <th style="border-bottom: 2px solid #ddd; padding: 8px; text-align: left; background-color: #fafafa; font-size: 13px; color: #666; text-transform: uppercase;">Historique des dates</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
+        const tbody = table.querySelector('tbody');
+
+        const pieces = hangar[voitureCourante].pieces || {};
+        let piecesArray = Object.values(pieces).filter(p => p && p.nom);
+        
+        // Tri des pièces par catégorie pour un affichage propre
+        piecesArray.sort((a, b) => {
+            if (a.cat < b.cat) return -1;
+            if (a.cat > b.cat) return 1;
+            return (a.ordre || 0) - (b.ordre || 0);
+        });
+
+        let hasData = false;
+        piecesArray.forEach(p => {
+            let hist = p.historiqueChangements || [];
+            let datesToShow = [...hist];
+            
+            // Si la pièce a une date de changement mais qu'elle n'est pas dans l'array historique
+            if (p.dernierChangement && !datesToShow.includes(p.dernierChangement)) {
+                datesToShow.push(p.dernierChangement);
+            }
+            
+            if (datesToShow.length > 0) {
+                hasData = true;
+                let datesFormatees = datesToShow.map(d => {
+                    if (d.includes('-')) {
+                        const [y, m, day] = d.split('-');
+                        return `${day}/${m}/${y}`;
+                    }
+                    return d;
+                }).join(', ');
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="border-bottom: 1px solid #eee; padding: 10px; font-size: 14px;"><strong>${p.cat}</strong></td>
+                    <td style="border-bottom: 1px solid #eee; padding: 10px; font-size: 14px;">${p.nom}</td>
+                    <td style="border-bottom: 1px solid #eee; padding: 10px; font-size: 14px;">${datesFormatees}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        });
+
+        if (!hasData) {
+            tbody.innerHTML = `<tr><td colspan="3" style="padding: 15px; text-align: center; font-style: italic;">Aucun historique de changement enregistré pour cette voiture.</td></tr>`;
+        }
+
+        container.appendChild(table);
+
+        const style = document.createElement('style');
+        style.innerHTML = `
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+        `;
+        container.appendChild(style);
+
+        const opt = { 
+            margin: [10, 10, 10, 10],
+            filename: `Historique_Pieces_${voitureCourante}.pdf`, 
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: 'css' }
+        };
+        
+        html2pdf().set(opt).from(container).save();
+    };
+    // -------------------------------------------------------------------------
     
     function convertirEnDate(dateStr) {
         if (!dateStr) return new Date(0);
@@ -1114,3 +1174,5 @@
         document.getElementById("form-session").reset(); 
     });
 </script>
+</body>
+</html>
