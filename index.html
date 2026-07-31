@@ -569,7 +569,7 @@
         "Amortisseur G": { ref: "S013", prix: 765.09 }
     };
 
-  let hangar = {};
+ let hangar = {};
     let voitureCourante = "";
 
     function obtenirDateDuJour() { return new Date().toISOString().split('T')[0]; }
@@ -632,7 +632,6 @@
         const nom = prompt("Nom de la pièce :");
         if (!nom) return;
         
-        // Si c'est l'habitacle, on ne demande pas la limite d'heures
         let lim = 0;
         if (cat !== "Habitacle") {
             lim = parseFloat(prompt("Limite heures :")) || 100;
@@ -648,6 +647,7 @@
             heuresActuelles: 0, 
             dernierChangement: "",
             note: "",
+            historiqueChangements: [],
             ordre: 999,
             ref: refPiece,
             prix: prixPiece
@@ -662,12 +662,6 @@
         }
     };
     
-    window.annulerDateChangement = (id) => {
-        update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { 
-            dernierChangement: "" 
-        });
-    };
-
     window.editerNotePiece = (id) => {
         const pieces = hangar[voitureCourante].pieces || {};
         const piece = pieces[id];
@@ -683,14 +677,64 @@
         }
     };
 
+    // --- NOUVEAU : GESTION DE L'HISTORIQUE ---
+    window.voirHistoriquePiece = (id) => {
+        const piece = hangar[voitureCourante].pieces[id];
+        if(!piece) return;
+        
+        const hist = piece.historiqueChangements || [];
+        
+        if (hist.length === 0) {
+            alert(`Aucun historique de remplacement pour : ${piece.nom}`);
+        } else {
+            const datesFormatees = hist.map(d => {
+                if (d.includes('-')) {
+                    const [y, m, day] = d.split('-');
+                    return `${day}/${m}/${y}`;
+                }
+                return d;
+            });
+            alert(`🕒 Historique des changements pour ${piece.nom} :\n\n- ` + datesFormatees.join('\n- '));
+        }
+    };
+
     window.remplacerPiece = (id) => {
         const date = document.getElementById("date-input-" + id).value; 
         if (!date) return;
+        
+        const piece = hangar[voitureCourante].pieces[id];
+        let hist = piece.historiqueChangements ? [...piece.historiqueChangements] : [];
+        
+        // Ajout de la nouvelle date à l'historique (sans doublon immédiat)
+        if (hist[hist.length - 1] !== date) {
+            hist.push(date);
+        }
+
         update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { 
             heuresActuelles: 0, 
-            dernierChangement: date 
+            dernierChangement: date,
+            historiqueChangements: hist
         });
     };
+
+    window.annulerDateChangement = (id) => {
+        const piece = hangar[voitureCourante].pieces[id];
+        let hist = piece.historiqueChangements ? [...piece.historiqueChangements] : [];
+        
+        // Si la dernière date de l'historique correspond à celle qu'on annule, on la retire
+        if (hist.length > 0 && hist[hist.length - 1] === piece.dernierChangement) {
+            hist.pop();
+        }
+        
+        // On récupère la date d'avant pour la restaurer (ou rien s'il n'y en a pas)
+        let datePrecedente = hist.length > 0 ? hist[hist.length - 1] : "";
+
+        update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { 
+            dernierChangement: datePrecedente,
+            historiqueChangements: hist
+        });
+    };
+    // ------------------------------------------
 
     window.supprimerCourse = function(index) {
         if (!confirm("Supprimer cette session ?")) return;
@@ -715,11 +759,9 @@
         container.prepend(header);
 
         container.querySelectorAll('table').forEach(table => {
-            // Identifier si on traite la catégorie Habitacle
             const estHabitacle = table.previousElementSibling && table.previousElementSibling.textContent.includes("HABITACLE");
             const headerRow = table.querySelector('thead tr');
             
-            // Adaptation des en-têtes pour le PDF
             if (estHabitacle) {
                 headerRow.innerHTML = '<th>Pièce</th><th>Dernier chgt</th><th>Notes</th><th>Status</th><th>Réf</th><th>Prix</th>';
             } else {
@@ -746,7 +788,6 @@
                 const statusTexte = tr.querySelector('.status').textContent.trim();
                 const estUrgent = statusTexte.includes('Changement') || statusTexte.includes('À prévoir');
                 
-                // On exclut les pièces d'habitacle de la liste urgente (pas de compte d'heures critique)
                 if (mode === 'urgent') {
                     if (estHabitacle || !estUrgent) {
                         tr.remove();
@@ -759,7 +800,6 @@
                 }
 
                 if (estHabitacle) {
-                    // Pour l'habitacle, la structure de la ligne d'origine est différente
                     const dernierChgt = tr.querySelectorAll('td')[1].textContent;
                     const notesHtml = (pieceObj && pieceObj.note) ? pieceObj.note : '-';
                     
@@ -772,7 +812,6 @@
                         <td>${prixFinal ? prixFinal.toFixed(2) + ' €' : '-'}</td>
                     `;
                 } else {
-                    // Mode normal
                     const noteHtml = (pieceObj && pieceObj.note) ? `<br><em style="font-size: 11px; color: #555;">Note: ${pieceObj.note}</em>` : '';
                     const quota = tr.querySelectorAll('td')[1].textContent; 
                     const tempsRestant = tr.querySelectorAll('td')[3].textContent;
@@ -891,7 +930,6 @@
             let div = document.createElement("div");
             div.className = "category-header " + g.class;
             
-            // J'injecte une couleur bleue pour l'habitacle directement ici
             if (g.id === "Habitacle") div.style.backgroundColor = "#34495e"; 
             
             div.innerHTML = `<span style="color: white; font-weight: bold;">${g.titre}</span>`;
@@ -923,7 +961,6 @@
                 let tr = document.createElement("tr");
 
                 if (isHabitacle) {
-                    // Rendu spécifique pour l'habitacle (sans le calcul d'heures)
                     let htmlNote = p.note ? `<span style="font-size:12px; color:#e67e22; font-weight:bold;">${p.note}</span>` : `<span style='color:#999; font-style:italic;'>Aucune note</span>`;
                     
                     tr.innerHTML = `
@@ -936,6 +973,7 @@
                                 <button class="btn-reset" onclick="deplacerPiece('${id}', -1, '${g.id}')" title="Monter">⬆️</button>
                                 <button class="btn-reset" onclick="deplacerPiece('${id}', 1, '${g.id}')" title="Descendre">⬇️</button>
                                 <button class="btn-reset" onclick="editerNotePiece('${id}')" title="Ajouter une note">📝</button>
+                                <button class="btn-reset" onclick="voirHistoriquePiece('${id}')" title="Voir l'historique">🕒</button>
                                 
                                 <input type="date" id="date-input-${id}" class="table-date-input">
                                 <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
@@ -945,7 +983,6 @@
                         </td>
                     `;
                 } else {
-                    // Rendu classique pour la mécanique (avec heures)
                     let dateMontage = convertirEnDate(p.dernierChangement);
                     let heuresCalculees = (hangar[voitureCourante].historique || [])
                         .filter(s => convertirEnDate(s.date) >= dateMontage)
@@ -982,6 +1019,7 @@
                                 <button class="btn-reset" onclick="deplacerPiece('${id}', -1, '${g.id}')" title="Monter">⬆️</button>
                                 <button class="btn-reset" onclick="deplacerPiece('${id}', 1, '${g.id}')" title="Descendre">⬇️</button>
                                 <button class="btn-reset" onclick="editerNotePiece('${id}')" title="Ajouter une note">📝</button>
+                                <button class="btn-reset" onclick="voirHistoriquePiece('${id}')" title="Voir l'historique">🕒</button>
                                 
                                 <input type="date" id="date-input-${id}" class="table-date-input">
                                 <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
