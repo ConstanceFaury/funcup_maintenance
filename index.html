@@ -527,11 +527,12 @@
         { cat: "Frein", nom: "Coupelles d'étriers", heuresActuelles: 0, limite: 200, dernierChangement: "" },
         { cat: "Frein", nom: "Coupelles de pompe AVANT", heuresActuelles: 0, limite: 100, dernierChangement: "" },
         { cat: "Frein", nom: "Coupelles de pompe ARRIERE", heuresActuelles: 0, limite: 100, dernierChangement: "" },
-         { cat: "Frein", nom: "Pédalier", heuresActuelles: 0, limite: 100, dernierChangement: "" },
-        { cat: "Frein", nom: "Coupelles d'étriers", heuresActuelles: 0, limite: 200, dernierChangement: "" }
-        
+        { cat: "Frein", nom: "Pédalier", heuresActuelles: 0, limite: 100, dernierChangement: "" },
+        { cat: "Frein", nom: "Coupelles d'étriers", heuresActuelles: 0, limite: 200, dernierChangement: "" },
+        { cat: "Habitacle", nom: "Siège Baquet", heuresActuelles: 0, limite: 0, dernierChangement: "", note: "" },
+        { cat: "Habitacle", nom: "Harnais", heuresActuelles: 0, limite: 0, dernierChangement: "", note: "" },
+        { cat: "Habitacle", nom: "Extincteur", heuresActuelles: 0, limite: 0, dernierChangement: "", note: "" }
     ];
-
     const donneesTechniques = {
         "Bougies": { ref: "MO239", prix: 23.76 },
         "Démarreur": { ref: "MO15", prix: 179.71 },
@@ -568,7 +569,7 @@
         "Amortisseur G": { ref: "S013", prix: 765.09 }
     };
 
-   let hangar = {};
+  let hangar = {};
     let voitureCourante = "";
 
     function obtenirDateDuJour() { return new Date().toISOString().split('T')[0]; }
@@ -630,7 +631,13 @@
 
         const nom = prompt("Nom de la pièce :");
         if (!nom) return;
-        const lim = parseFloat(prompt("Limite heures :")) || 100;
+        
+        // Si c'est l'habitacle, on ne demande pas la limite d'heures
+        let lim = 0;
+        if (cat !== "Habitacle") {
+            lim = parseFloat(prompt("Limite heures :")) || 100;
+        }
+        
         const refPiece = prompt("Référence de la pièce (ex: MO123) :") || "-";
         const prixPiece = parseFloat(prompt("Prix de la pièce en € :")) || 0;
         
@@ -661,7 +668,6 @@
         });
     };
 
-    // NOUVELLE FONCTION : Éditer la note d'une pièce
     window.editerNotePiece = (id) => {
         const pieces = hangar[voitureCourante].pieces || {};
         const piece = pieces[id];
@@ -670,7 +676,7 @@
         const noteActuelle = piece.note || "";
         const nouvelleNote = prompt(`Ajouter/Modifier une note pour ${piece.nom} :`, noteActuelle);
         
-        if (nouvelleNote !== null) { // Si l'utilisateur n'a pas annulé
+        if (nouvelleNote !== null) { 
             update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { 
                 note: nouvelleNote 
             });
@@ -709,8 +715,16 @@
         container.prepend(header);
 
         container.querySelectorAll('table').forEach(table => {
+            // Identifier si on traite la catégorie Habitacle
+            const estHabitacle = table.previousElementSibling && table.previousElementSibling.textContent.includes("HABITACLE");
             const headerRow = table.querySelector('thead tr');
-            headerRow.innerHTML = '<th>Pièce</th><th>Quotas</th><th>Status</th><th>Temps restant</th><th>Réf</th><th>Prix</th>';
+            
+            // Adaptation des en-têtes pour le PDF
+            if (estHabitacle) {
+                headerRow.innerHTML = '<th>Pièce</th><th>Dernier chgt</th><th>Notes</th><th>Status</th><th>Réf</th><th>Prix</th>';
+            } else {
+                headerRow.innerHTML = '<th>Pièce</th><th>Quotas</th><th>Status</th><th>Temps restant</th><th>Réf</th><th>Prix</th>';
+            }
 
             table.querySelectorAll('tbody tr').forEach(tr => {
                 if (tr.querySelector('.btn-add-piece')) {
@@ -732,29 +746,46 @@
                 const statusTexte = tr.querySelector('.status').textContent.trim();
                 const estUrgent = statusTexte.includes('Changement') || statusTexte.includes('À prévoir');
                 
-                if (mode === 'urgent' && !estUrgent) {
-                    tr.remove();
-                    return;
+                // On exclut les pièces d'habitacle de la liste urgente (pas de compte d'heures critique)
+                if (mode === 'urgent') {
+                    if (estHabitacle || !estUrgent) {
+                        tr.remove();
+                        return;
+                    }
                 }
                 
                 if (estUrgent && prixFinal) {
                     prixTotal += prixFinal;
                 }
 
-                // Affichage de la note dans le PDF si elle existe
-                const noteHtml = (pieceObj && pieceObj.note) ? `<br><em style="font-size: 11px; color: #555;">Note: ${pieceObj.note}</em>` : '';
+                if (estHabitacle) {
+                    // Pour l'habitacle, la structure de la ligne d'origine est différente
+                    const dernierChgt = tr.querySelectorAll('td')[1].textContent;
+                    const notesHtml = (pieceObj && pieceObj.note) ? pieceObj.note : '-';
+                    
+                    tr.innerHTML = `
+                        <td><strong>${nomPiece}</strong></td>
+                        <td>${dernierChgt}</td>
+                        <td><em style="font-size: 11px; color: #555;">${notesHtml}</em></td>
+                        <td>-</td>
+                        <td>${refFinal}</td>
+                        <td>${prixFinal ? prixFinal.toFixed(2) + ' €' : '-'}</td>
+                    `;
+                } else {
+                    // Mode normal
+                    const noteHtml = (pieceObj && pieceObj.note) ? `<br><em style="font-size: 11px; color: #555;">Note: ${pieceObj.note}</em>` : '';
+                    const quota = tr.querySelectorAll('td')[1].textContent; 
+                    const tempsRestant = tr.querySelectorAll('td')[3].textContent;
 
-                const quota = tr.querySelectorAll('td')[1].textContent; 
-                const tempsRestant = tr.querySelectorAll('td')[3].textContent;
-
-                tr.innerHTML = `
-                    <td><strong>${nomPiece}</strong>${noteHtml}</td>
-                    <td>${quota}</td>
-                    <td>${statusTexte}</td>
-                    <td>${tempsRestant}</td>
-                    <td>${refFinal}</td>
-                    <td>${prixFinal ? prixFinal.toFixed(2) + ' €' : '-'}</td>
-                `;
+                    tr.innerHTML = `
+                        <td><strong>${nomPiece}</strong>${noteHtml}</td>
+                        <td>${quota}</td>
+                        <td>${statusTexte}</td>
+                        <td>${tempsRestant}</td>
+                        <td>${refFinal}</td>
+                        <td>${prixFinal ? prixFinal.toFixed(2) + ' €' : '-'}</td>
+                    `;
+                }
             });
         });
 
@@ -806,7 +837,8 @@
             "Transmission": ["Transmission"],
             "Freins": ["Frein", "Freinage", "Freins"],
             "Train avant": ["Train avant"],
-            "Train arrière": ["Train arrière"]
+            "Train arrière": ["Train arrière"],
+            "Habitacle": ["Habitacle"]
         };
         const clesAutorisees = clesParCategorie[idCategorie] || [];
 
@@ -851,16 +883,27 @@
             { id: "Transmission", titre: "⛓️ CATÉGORIE : TRANSMISSION", class: "cat-transmission", cles: ["Transmission"] },
             { id: "Freins", titre: "🛑 CATÉGORIE : FREINS", class: "cat-freins", cles: ["Frein", "Freinage", "Freins"] },
             { id: "Train avant", titre: "🚘 CATÉGORIE : TRAIN AVANT", class: "cat-train-avant", cles: ["Train avant"] },
-            { id: "Train arrière", titre: "🏎️ CATÉGORIE : TRAIN ARRIÈRE", class: "cat-train-arriere", cles: ["Train arrière"] }
+            { id: "Train arrière", titre: "🏎️ CATÉGORIE : TRAIN ARRIÈRE", class: "cat-train-arriere", cles: ["Train arrière"] },
+            { id: "Habitacle", titre: "💺 CATÉGORIE : HABITACLE", class: "cat-habitacle", cles: ["Habitacle"] }
         ];
 
         groupes.forEach(g => {
             let div = document.createElement("div");
             div.className = "category-header " + g.class;
+            
+            // J'injecte une couleur bleue pour l'habitacle directement ici
+            if (g.id === "Habitacle") div.style.backgroundColor = "#34495e"; 
+            
             div.innerHTML = `<span style="color: white; font-weight: bold;">${g.titre}</span>`;
             
+            let isHabitacle = (g.id === "Habitacle");
+            
             let table = document.createElement("table");
-            table.innerHTML = `<thead><tr><th>Pièce</th><th>Heures faites</th><th>Limite (Quotas)</th><th>Temps restant</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody>`;
+            if (isHabitacle) {
+                table.innerHTML = `<thead><tr><th>Pièce</th><th>Date Installation</th><th>Notes & Validité</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody>`;
+            } else {
+                table.innerHTML = `<thead><tr><th>Pièce</th><th>Heures faites</th><th>Limite (Quotas)</th><th>Temps restant</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody>`;
+            }
             let tbody = table.querySelector("tbody");
 
             const pieces = hangar[voitureCourante].pieces || {}; 
@@ -877,57 +920,83 @@
 
             piecesDeLaCategorie.forEach((p) => {
                 let id = p.id;
-                let dateMontage = convertirEnDate(p.dernierChangement);
-                let heuresCalculees = (hangar[voitureCourante].historique || [])
-                    .filter(s => convertirEnDate(s.date) >= dateMontage)
-                    .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
-                
-                let margeRestante = p.limite - heuresCalculees;
-                let seuilAlerte = p.limite * 0.15;
-                
-                let statutTexte = 'OK';
-                let statutClass = 'status-ok';
-                
-                if (margeRestante <= 0) {
-                    statutTexte = 'Changement';
-                    statutClass = 'status-danger';
-                } else if (margeRestante <= seuilAlerte) {
-                    statutTexte = 'À prévoir';
-                    statutClass = 'status-warn';
-                }
-
-                // Génération HTML pour la note sous la pièce
-                let htmlNote = p.note ? `<span style="display:block; font-size:11px; color:#e67e22; font-style:italic; margin-top:3px;">📝 ${p.note}</span>` : "";
-                            
                 let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>
-                        <strong>${p.nom || "Sans nom"}</strong>
-                        <span class="date-changement">${p.dernierChangement ? 'Montée le : ' + p.dernierChangement : 'Aucune date'}</span>
-                        ${htmlNote}
-                    </td>
-                    <td>${heuresCalculees.toFixed(2)} h</td>
-                    <td>${p.limite || 0} h</td>
-                    <td>${margeRestante.toFixed(2)} h</td>
-                    <td><span class="status ${statutClass}">${statutTexte}</span></td>
-                    <td>
-                        <div class="action-cell">
-                            <button class="btn-reset" onclick="deplacerPiece('${id}', -1, '${g.id}')" title="Monter">⬆️</button>
-                            <button class="btn-reset" onclick="deplacerPiece('${id}', 1, '${g.id}')" title="Descendre">⬇️</button>
-                            <button class="btn-reset" onclick="editerNotePiece('${id}')" title="Ajouter une note">📝</button>
-                            
-                            <input type="date" id="date-input-${id}" class="table-date-input">
-                            <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
-                            <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
-                            <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
-                        </div>
-                    </td>
-                `;
+
+                if (isHabitacle) {
+                    // Rendu spécifique pour l'habitacle (sans le calcul d'heures)
+                    let htmlNote = p.note ? `<span style="font-size:12px; color:#e67e22; font-weight:bold;">${p.note}</span>` : `<span style='color:#999; font-style:italic;'>Aucune note</span>`;
+                    
+                    tr.innerHTML = `
+                        <td><strong>${p.nom || "Sans nom"}</strong></td>
+                        <td><strong>${p.dernierChangement || '---'}</strong></td>
+                        <td>${htmlNote}</td>
+                        <td><span class="status status-ok">-</span></td>
+                        <td>
+                            <div class="action-cell">
+                                <button class="btn-reset" onclick="deplacerPiece('${id}', -1, '${g.id}')" title="Monter">⬆️</button>
+                                <button class="btn-reset" onclick="deplacerPiece('${id}', 1, '${g.id}')" title="Descendre">⬇️</button>
+                                <button class="btn-reset" onclick="editerNotePiece('${id}')" title="Ajouter une note">📝</button>
+                                
+                                <input type="date" id="date-input-${id}" class="table-date-input">
+                                <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
+                                <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
+                                <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
+                            </div>
+                        </td>
+                    `;
+                } else {
+                    // Rendu classique pour la mécanique (avec heures)
+                    let dateMontage = convertirEnDate(p.dernierChangement);
+                    let heuresCalculees = (hangar[voitureCourante].historique || [])
+                        .filter(s => convertirEnDate(s.date) >= dateMontage)
+                        .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
+                    
+                    let margeRestante = p.limite - heuresCalculees;
+                    let seuilAlerte = p.limite * 0.15;
+                    
+                    let statutTexte = 'OK';
+                    let statutClass = 'status-ok';
+                    
+                    if (margeRestante <= 0) {
+                        statutTexte = 'Changement';
+                        statutClass = 'status-danger';
+                    } else if (margeRestante <= seuilAlerte) {
+                        statutTexte = 'À prévoir';
+                        statutClass = 'status-warn';
+                    }
+
+                    let htmlNote = p.note ? `<span style="display:block; font-size:11px; color:#e67e22; font-style:italic; margin-top:3px;">📝 ${p.note}</span>` : "";
+                                
+                    tr.innerHTML = `
+                        <td>
+                            <strong>${p.nom || "Sans nom"}</strong>
+                            <span class="date-changement">${p.dernierChangement ? 'Montée le : ' + p.dernierChangement : 'Aucune date'}</span>
+                            ${htmlNote}
+                        </td>
+                        <td>${heuresCalculees.toFixed(2)} h</td>
+                        <td>${p.limite || 0} h</td>
+                        <td>${margeRestante.toFixed(2)} h</td>
+                        <td><span class="status ${statutClass}">${statutTexte}</span></td>
+                        <td>
+                            <div class="action-cell">
+                                <button class="btn-reset" onclick="deplacerPiece('${id}', -1, '${g.id}')" title="Monter">⬆️</button>
+                                <button class="btn-reset" onclick="deplacerPiece('${id}', 1, '${g.id}')" title="Descendre">⬇️</button>
+                                <button class="btn-reset" onclick="editerNotePiece('${id}')" title="Ajouter une note">📝</button>
+                                
+                                <input type="date" id="date-input-${id}" class="table-date-input">
+                                <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
+                                <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
+                                <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
+                            </div>
+                        </td>
+                    `;
+                }
                 tbody.appendChild(tr);
             });
             
             let trAjout = document.createElement("tr");
-            trAjout.innerHTML = `<td colspan="6" style="text-align:center; background:#f0f0f0; padding: 10px;">
+            let colspan = isHabitacle ? 5 : 6;
+            trAjout.innerHTML = `<td colspan="${colspan}" style="text-align:center; background:#f0f0f0; padding: 10px;">
                 <button class="btn-add-piece" onclick="ajouterPiecePourCategorie('${g.id}')">
                     ➕ Ajouter une pièce dans ${g.id}
                 </button></td>`;
