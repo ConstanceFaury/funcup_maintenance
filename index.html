@@ -208,6 +208,18 @@
             display: inline-block;
         }
 
+        /* NOUVEAU STYLE : Champ de saisie pour le quota */
+        .quota-input {
+            width: 55px;
+            padding: 4px;
+            font-size: 12px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            display: inline-block;
+            font-weight: bold;
+        }
+
         button {
             background-color: var(--primary); color: white; border: none; padding: 12px 20px;
             border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.2s;
@@ -323,6 +335,8 @@
         tr { page-break-inside: avoid; break-inside: avoid; }
         .category-header { page-break-after: avoid; break-after: avoid; }
         table { page-break-inside: auto; }
+        /* Masquer les bordures du champ input à l'impression pour faire plus propre */
+        .quota-input { border: none; background: transparent; padding: 0; width: auto; font-weight: normal; }
     }
     </style>
 </head>
@@ -431,6 +445,7 @@
         </div>
     </div>
 </div>
+    
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -614,6 +629,29 @@
         }
     };
 
+    // --- NOUVELLE FONCTION : Validation via le champ de saisie du quota ---
+    window.modifierQuota = (id, nouvelleValeurStr) => {
+        const pieces = hangar[voitureCourante].pieces || {};
+        const piece = pieces[id];
+        if (!piece) return;
+
+        const nouvelleLimite = parseFloat(nouvelleValeurStr);
+        
+        if (isNaN(nouvelleLimite) || nouvelleLimite < 0) {
+            alert("Valeur invalide. Veuillez entrer un nombre supérieur ou égal à 0.");
+            majAffichage(); 
+            return;
+        }
+
+        if (confirm(`Confirmez-vous le nouveau quota de ${nouvelleLimite}h pour ${piece.nom} ?`)) {
+            update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), {
+                limite: nouvelleLimite
+            }).catch(err => console.error("Erreur mise à jour quota: ", err));
+        } else {
+            majAffichage(); 
+        }
+    };
+
     window.voirHistoriquePiece = (id) => {
         const piece = hangar[voitureCourante].pieces[id];
         if(!piece) return;
@@ -751,7 +789,16 @@
                     `;
                 } else {
                     const noteHtml = (pieceObj && pieceObj.note) ? `<br><em style="font-size: 11px; color: #555;">Note: ${pieceObj.note}</em>` : '';
-                    const quota = tr.querySelectorAll('td')[1].textContent; 
+                    
+                    // Extraction du texte de la cellule (le champ input ou le texte direct)
+                    let tdQuota = tr.querySelectorAll('td')[2];
+                    let quota = "";
+                    if (tdQuota && tdQuota.querySelector('input')) {
+                        quota = tdQuota.querySelector('input').value + ' h';
+                    } else if (tdQuota) {
+                        quota = tdQuota.textContent;
+                    }
+
                     const tempsRestant = tr.querySelectorAll('td')[3].textContent;
 
                     tr.innerHTML = `
@@ -1034,7 +1081,7 @@
                             ${htmlNote}
                         </td>
                         <td>${heuresCalculees.toFixed(2)} h</td>
-                        <td>${p.limite || 0} h</td>
+                        <td><input type="number" class="quota-input" value="${p.limite || 0}" onchange="modifierQuota('${id}', this.value)" title="Modifier le quota d'heures"> h</td>
                         <td>${margeRestante.toFixed(2)} h</td>
                         <td><span class="status ${statutClass}">${statutTexte}</span></td>
                         <td>
