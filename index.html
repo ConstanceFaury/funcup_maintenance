@@ -455,8 +455,9 @@
 </div>
 
 <script type="module">
+    // 1. Tous les imports regroupés proprement en haut
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, onValue, update, remove, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, onValue, update, remove, push, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyD1Ea_dUlVMyyJhxdyxyoZrR5EIBnvb_iQ",
@@ -521,40 +522,40 @@
     ];
 
     const donneesTechniques = {
-    "Bougies": { ref: "MO239", prix: 23.76 },
-    "Démarreur": { ref: "MO15", prix: 179.71 },
-    "Alternateur": { ref: "MO01", prix: 230.06 },
-    "Huile et filtre à huile": { ref: "MO223", prix: 13.01 },
-    "Filtre à essence": { ref: "M126", prix: 14.08 },
-    "Pompe à Essence": { ref: "M318", prix: 110.66 },
-    "Filtre à air": { ref: "MO44", prix: 51.20 },
-    "Bobine": { ref: "MO224", prix: 24.14 },
-    "Régulateur de pression essence": { ref: "M130", prix: 61.04 },
-    "Vase expansion et bouchon": { ref: "M100", prix: 18.78 },
-    "Courroie d'accessoires": { ref: "MO244", prix: 10.90 },
-    "Disque d'embrayage": { ref: "T056", prix: 305.79 },
-    "Mécanisme d'embrayage": { ref: "T057", prix: 177.03 },
-    "Coupelle de pompe": { ref: "T006SB", prix: 23.94 },
-    "Butée (coupelle et roulement)": { ref: "T006S", prix: 463.32 },
-    "Cardan droit": { ref: "T007", prix: 555.95 },
-    "Cardan gauche": { ref: "T008", prix: 547.71 },
-    "Groupe paddle shift": { ref: "BS135", prix: 7620.06 },
-    "Coupelles d'étriers": { ref: "F0088", prix: 5.97 },
-    "Roulement de roue AVD": { ref: "S039", prix: 49.99 },
-    "Roulement de roue AVG": { ref: "S039", prix: 49.99 },
-    "Roulement de roue ARD": { ref: "S039", prix: 49.99 },
-    "Roulement de roue ARG": { ref: "S039", prix: 49.99 },
-    "Rotule inférieure de pivot D": { ref: "RID", prix: 56.05 },
-    "Rotule inférieure de pivot G": { ref: "RIG", prix: 48.80 },
-    "Rotule supérieure amortisseur D": { ref: "S037", prix: 87.15 },
-    "Rotule supérieure amortisseur G": { ref: "S038", prix: 87.15 },
-    "Rotule de direction D": { ref: "D017", prix: 24.49 },
-    "Rotule de direction G": { ref: "D017", prix: 24.49 },
-    "Barre de direction D": { ref: "D004", prix: 61.08 },
-    "Barre de direction G": { ref: "D004", prix: 61.08 },
-    "Amortisseur D": { ref: "S013", prix: 765.09 },
-    "Amortisseur G": { ref: "S013", prix: 765.09 }
-};
+        "Bougies": { ref: "MO239", prix: 23.76 },
+        "Démarreur": { ref: "MO15", prix: 179.71 },
+        "Alternateur": { ref: "MO01", prix: 230.06 },
+        "Huile et filtre à huile": { ref: "MO223", prix: 13.01 },
+        "Filtre à essence": { ref: "M126", prix: 14.08 },
+        "Pompe à Essence": { ref: "M318", prix: 110.66 },
+        "Filtre à air": { ref: "MO44", prix: 51.20 },
+        "Bobine": { ref: "MO224", prix: 24.14 },
+        "Régulateur de pression essence": { ref: "M130", prix: 61.04 },
+        "Vase expansion et bouchon": { ref: "M100", prix: 18.78 },
+        "Courroie d'accessoires": { ref: "MO244", prix: 10.90 },
+        "Disque d'embrayage": { ref: "T056", prix: 305.79 },
+        "Mécanisme d'embrayage": { ref: "T057", prix: 177.03 },
+        "Coupelle de pompe": { ref: "T006SB", prix: 23.94 },
+        "Butée (coupelle et roulement)": { ref: "T006S", prix: 463.32 },
+        "Cardan droit": { ref: "T007", prix: 555.95 },
+        "Cardan gauche": { ref: "T008", prix: 547.71 },
+        "Groupe paddle shift": { ref: "BS135", prix: 7620.06 },
+        "Coupelles d'étriers": { ref: "F0088", prix: 5.97 },
+        "Roulement de roue AVD": { ref: "S039", prix: 49.99 },
+        "Roulement de roue AVG": { ref: "S039", prix: 49.99 },
+        "Roulement de roue ARD": { ref: "S039", prix: 49.99 },
+        "Roulement de roue ARG": { ref: "S039", prix: 49.99 },
+        "Rotule inférieure de pivot D": { ref: "RID", prix: 56.05 },
+        "Rotule inférieure de pivot G": { ref: "RIG", prix: 48.80 },
+        "Rotule supérieure amortisseur D": { ref: "S037", prix: 87.15 },
+        "Rotule supérieure amortisseur G": { ref: "S038", prix: 87.15 },
+        "Rotule de direction D": { ref: "D017", prix: 24.49 },
+        "Rotule de direction G": { ref: "D017", prix: 24.49 },
+        "Barre de direction D": { ref: "D004", prix: 61.08 },
+        "Barre de direction G": { ref: "D004", prix: 61.08 },
+        "Amortisseur D": { ref: "S013", prix: 765.09 },
+        "Amortisseur G": { ref: "S013", prix: 765.09 }
+    };
 
     let hangar = {};
     let voitureCourante = "";
@@ -580,11 +581,11 @@
         });
     }
     
-function rafraichirCheckboxes() {
+    function rafraichirCheckboxes() {
         const container = document.getElementById("container-checkbox-voitures");
-        if (!container) return; // Sécurité si la div n'existe pas
+        if (!container) return; 
         
-        container.innerHTML = ""; // Vide le contenu actuel
+        container.innerHTML = ""; 
         Object.keys(hangar).forEach(nomVoiture => {
             container.innerHTML += `
                 <div class="checkbox-row">
@@ -595,7 +596,12 @@ function rafraichirCheckboxes() {
         });
     }
 
-    window.changerVoitureCourante = () => { voitureCourante = document.getElementById("select-voiture").value; ; };
+    // 2. Correction : J'ai remis majAffichage() ici
+    window.changerVoitureCourante = () => { 
+        voitureCourante = document.getElementById("select-voiture").value; 
+        majAffichage(); 
+    };
+
     window.supprimerVoitureCourante = () => {
         if (!voitureCourante) return;
         if (confirm(`Êtes-vous sûr de vouloir supprimer la voiture ${voitureCourante} ?`)) {
@@ -606,7 +612,7 @@ function rafraichirCheckboxes() {
         }
     };
 
-window.ajouterPiecePourCategorie = (cat) => {
+    window.ajouterPiecePourCategorie = (cat) => {
         if (typeof db === 'undefined') {
             alert("Le système est en cours de chargement, réessaie dans une seconde.");
             return;
@@ -618,41 +624,41 @@ window.ajouterPiecePourCategorie = (cat) => {
         const refPiece = prompt("Référence de la pièce (ex: MO123) :") || "-";
         const prixPiece = parseFloat(prompt("Prix de la pièce en € :")) || 0;
         
-    push(ref(db, `hangar/${voitureCourante}/pieces/`), { 
+        push(ref(db, `hangar/${voitureCourante}/pieces/`), { 
             cat: cat, 
             nom: nom, 
             limite: lim, 
             heuresActuelles: 0, 
             dernierChangement: "",
-            ordre: 999, // <--- AJOUTE CETTE LIGNE
+            ordre: 999,
             ref: refPiece,
             prix: prixPiece
         }).then(() => {
-            if (typeof majAffichage === 'function') ;
+            // 3. Correction : majAffichage() manquant restauré
+            if (typeof majAffichage === 'function') majAffichage();
         });
     };
     
-   window.supprimerPiece = (id) => {
+    window.supprimerPiece = (id) => {
         if (confirm("Supprimer cette pièce ?")) {
             remove(ref(db, `hangar/${voitureCourante}/pieces/${id}`));
         }
     };
     
     window.annulerDateChangement = (id) => {
-        // Réinitialise la date de changement à vide
         update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { 
             dernierChangement: "" 
         });
     };
 
-   window.remplacerPiece = (id) => {
-    const date = document.getElementById("date-input-" + id).value; // ex: "2026-07-10"
-    if (!date) return;
-    update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { 
-        heuresActuelles: 0, 
-        dernierChangement: date // Firebase enregistre "2026-07-10"
-    });
-};
+    window.remplacerPiece = (id) => {
+        const date = document.getElementById("date-input-" + id).value; 
+        if (!date) return;
+        update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { 
+            heuresActuelles: 0, 
+            dernierChangement: date 
+        });
+    };
 
     window.supprimerCourse = function(index) {
         if (!confirm("Supprimer cette session ?")) return;
@@ -662,126 +668,110 @@ window.ajouterPiecePourCategorie = (cat) => {
         
         update(ref(db, `hangar/${voitureCourante}`), { historique: hist });
     };
-window.genererPDF = function(mode) {
-    // 1. Clonage du container
-    const container = document.getElementById('maintenance-tables-container').cloneNode(true);
-    let prixTotal = 0;
 
-    // --- NOUVEAU : AJOUT DE L'EN-TÊTE DANS LE CLONE ---
-    const header = document.createElement('div');
-    header.innerHTML = `
-        <div style="border-bottom: 2px solid #e60000; margin-bottom: 20px; padding-bottom: 10px;">
-            <h1 style="color: #e60000; margin: 0;">4-RACE - MAINTENANCE</h1>
-            <p style="margin: 0;">Voiture : <strong>${voitureCourante}</strong> | Date : ${new Date().toLocaleDateString()}</p>
-        </div>
-    `;
-    container.prepend(header);
-    // --------------------------------------------------
+    window.genererPDF = function(mode) {
+        const container = document.getElementById('maintenance-tables-container').cloneNode(true);
+        let prixTotal = 0;
 
-    // 2. Traitement des tables
-    container.querySelectorAll('table').forEach(table => {
-        const headerRow = table.querySelector('thead tr');
-        headerRow.innerHTML = '<th>Pièce</th><th>Quotas</th><th>Status</th><th>Temps restant</th><th>Réf</th><th>Prix</th>';
+        const header = document.createElement('div');
+        header.innerHTML = `
+            <div style="border-bottom: 2px solid #e60000; margin-bottom: 20px; padding-bottom: 10px;">
+                <h1 style="color: #e60000; margin: 0;">4-RACE - MAINTENANCE</h1>
+                <p style="margin: 0;">Voiture : <strong>${voitureCourante}</strong> | Date : ${new Date().toLocaleDateString()}</p>
+            </div>
+        `;
+        container.prepend(header);
 
-        table.querySelectorAll('tbody tr').forEach(tr => {
-            // Supprimer le bouton "Ajouter"
-            if (tr.querySelector('.btn-add-piece')) {
-                tr.remove();
-                return;
-            }
+        container.querySelectorAll('table').forEach(table => {
+            const headerRow = table.querySelector('thead tr');
+            headerRow.innerHTML = '<th>Pièce</th><th>Quotas</th><th>Status</th><th>Temps restant</th><th>Réf</th><th>Prix</th>';
 
-            const nomCell = tr.querySelector('td strong');
-            const nomPiece = nomCell ? nomCell.textContent.trim() : '';
-            
-            // 1. Chercher d'abord dans Firebase (pièce ajoutée ou modifiée)
-            const pieces = hangar[voitureCourante].pieces || {};
-            const pieceObj = Object.values(pieces).find(p => p.nom === nomPiece);
-            
-            // 2. Si pas trouvé ou vide, chercher dans le dictionnaire de secours "donneesTechniques"
-            const dataSecours = (typeof donneesTechniques !== 'undefined') ? donneesTechniques[nomPiece] : null;
-            
-            const refFinal = (pieceObj && pieceObj.ref && pieceObj.ref !== "-") ? pieceObj.ref : (dataSecours ? dataSecours.ref : '-');
-            const prixFinal = (pieceObj && pieceObj.prix) ? parseFloat(pieceObj.prix) : (dataSecours ? dataSecours.prix : 0);
-            
-            // 3. Récupération du statut nettoyé
-            const statusTexte = tr.querySelector('.status').textContent.trim();
-            const estUrgent = statusTexte.includes('Changement') || statusTexte.includes('À prévoir');
-            
-            if (mode === 'urgent' && !estUrgent) {
-                tr.remove();
-                return;
-            }
-            
-            if (estUrgent && prixFinal) {
-                prixTotal += prixFinal;
-            }
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                if (tr.querySelector('.btn-add-piece')) {
+                    tr.remove();
+                    return;
+                }
 
-            const quota = tr.querySelectorAll('td')[1].textContent; 
-            const tempsRestant = tr.querySelectorAll('td')[3].textContent;
+                const nomCell = tr.querySelector('td strong');
+                const nomPiece = nomCell ? nomCell.textContent.trim() : '';
+                
+                const pieces = hangar[voitureCourante].pieces || {};
+                const pieceObj = Object.values(pieces).find(p => p.nom === nomPiece);
+                
+                const dataSecours = (typeof donneesTechniques !== 'undefined') ? donneesTechniques[nomPiece] : null;
+                
+                const refFinal = (pieceObj && pieceObj.ref && pieceObj.ref !== "-") ? pieceObj.ref : (dataSecours ? dataSecours.ref : '-');
+                const prixFinal = (pieceObj && pieceObj.prix) ? parseFloat(pieceObj.prix) : (dataSecours ? dataSecours.prix : 0);
+                
+                const statusTexte = tr.querySelector('.status').textContent.trim();
+                const estUrgent = statusTexte.includes('Changement') || statusTexte.includes('À prévoir');
+                
+                if (mode === 'urgent' && !estUrgent) {
+                    tr.remove();
+                    return;
+                }
+                
+                if (estUrgent && prixFinal) {
+                    prixTotal += prixFinal;
+                }
 
-            tr.innerHTML = `
-                <td><strong>${nomPiece}</strong></td>
-                <td>${quota}</td>
-                <td>${statusTexte}</td>
-                <td>${tempsRestant}</td>
-                <td>${refFinal}</td>
-                <td>${prixFinal ? prixFinal.toFixed(2) + ' €' : '-'}</td>
-            `;
+                const quota = tr.querySelectorAll('td')[1].textContent; 
+                const tempsRestant = tr.querySelectorAll('td')[3].textContent;
+
+                tr.innerHTML = `
+                    <td><strong>${nomPiece}</strong></td>
+                    <td>${quota}</td>
+                    <td>${statusTexte}</td>
+                    <td>${tempsRestant}</td>
+                    <td>${refFinal}</td>
+                    <td>${prixFinal ? prixFinal.toFixed(2) + ' €' : '-'}</td>
+                `;
+            });
         });
-    });
 
-    // 3. Ajout du total estimé
-   const totalDiv = document.createElement('div');
-    totalDiv.style.marginTop = "30px";
-    totalDiv.style.textAlign = "right";
-    totalDiv.style.paddingRight = "10px"; // Ajoute une marge à droite
-    totalDiv.innerHTML = `<h3 style="margin: 0;">Total estimé (${mode}) : ${prixTotal.toFixed(2)} €</h3>`;
-    container.appendChild(totalDiv);
+        const totalDiv = document.createElement('div');
+        totalDiv.style.marginTop = "30px";
+        totalDiv.style.textAlign = "right";
+        totalDiv.style.paddingRight = "10px"; 
+        totalDiv.innerHTML = `<h3 style="margin: 0;">Total estimé (${mode}) : ${prixTotal.toFixed(2)} €</h3>`;
+        container.appendChild(totalDiv);
 
-    // --- NOUVEAU : PROTECTION CONTRE LE SAUT DE PAGE ---
-    const style = document.createElement('style');
-    style.innerHTML = `
-        /* On autorise les lignes à être coupées si besoin, mais on protège les titres */
-        .category-header { page-break-after: avoid; }
-        table { page-break-inside: auto; }
-        tr { page-break-inside: avoid; page-break-after: auto; }
-    `;
-    container.appendChild(style);
-    // ----------------------------------------------------
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .category-header { page-break-after: avoid; }
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+        `;
+        container.appendChild(style);
 
-    // 4. Génération
-const opt = { 
-        margin: [10, 10, 10, 10],
-        filename: `Maintenance_${mode}_${voitureCourante}.pdf`, 
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        // On supprime la règle "before: .category-header" qui forçait trop de sauts
-        pagebreak: { mode: 'css' } 
+        const opt = { 
+            margin: [10, 10, 10, 10],
+            filename: `Maintenance_${mode}_${voitureCourante}.pdf`, 
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: 'css' } 
+        };
+        
+        html2pdf().set(opt).from(container).save();
     };
     
-    html2pdf().set(opt).from(container).save();
-};
-    
-function convertirEnDate(dateStr) {
-    if (!dateStr) return new Date(0);
+    function convertirEnDate(dateStr) {
+        if (!dateStr) return new Date(0);
 
-    // Si la date contient des tirets (format HTML YYYY-MM-DD)
-    if (dateStr.includes('-')) {
-        const [y, m, d] = dateStr.split('-').map(Number);
-        return new Date(y, m - 1, d);
-    } 
-    // Si la date contient des slashs (ton ancien format DD/MM/YYYY)
-    else if (dateStr.includes('/')) {
-        const [d, m, y] = dateStr.split('/').map(Number);
-        return new Date(y, m - 1, d);
+        if (dateStr.includes('-')) {
+            const [y, m, d] = dateStr.split('-').map(Number);
+            return new Date(y, m - 1, d);
+        } 
+        else if (dateStr.includes('/')) {
+            const [d, m, y] = dateStr.split('/').map(Number);
+            return new Date(y, m - 1, d);
+        }
+        return new Date(0);
     }
-    return new Date(0);
-}
 
     window.deplacerPiece = (id, direction, idCategorie) => {
         const pieces = hangar[voitureCourante].pieces || {};
         
-        // Redéfinition locale des clés pour retrouver les pièces de la bonne catégorie
         const clesParCategorie = {
             "Moteur": ["Moteur"],
             "Transmission": ["Transmission"],
@@ -791,32 +781,26 @@ function convertirEnDate(dateStr) {
         };
         const clesAutorisees = clesParCategorie[idCategorie] || [];
 
-        // On récupère et trie les pièces de cette catégorie exacte
         let piecesCat = Object.entries(pieces)
             .filter(([key, p]) => p && p.cat && clesAutorisees.includes(p.cat))
             .map(([key, p], index) => ({ key, ordre: p.ordre !== undefined ? p.ordre : index }));
             
         piecesCat.sort((a, b) => a.ordre - b.ordre);
         
-        // On cherche l'index de la pièce sur laquelle on a cliqué
         const indexActuel = piecesCat.findIndex(p => p.key === id);
         if (indexActuel < 0) return;
         
-        // On calcule l'index avec lequel on va échanger la position (-1 pour monter, +1 pour descendre)
         const indexCible = indexActuel + direction;
         
-        // Si on essaie de monter la 1ère pièce ou descendre la dernière, on ne fait rien
         if (indexCible < 0 || indexCible >= piecesCat.length) return;
         
         const pieceActuelle = piecesCat[indexActuel];
         const pieceCible = piecesCat[indexCible];
         
-        // On échange leurs valeurs "ordre"
         let tempOrdre = pieceActuelle.ordre;
         pieceActuelle.ordre = pieceCible.ordre;
         pieceCible.ordre = tempOrdre;
         
-        // On envoie la mise à jour simultanée à Firebase
         const updates = {};
         updates[`hangar/${voitureCourante}/pieces/${pieceActuelle.key}/ordre`] = pieceActuelle.ordre;
         updates[`hangar/${voitureCourante}/pieces/${pieceCible.key}/ordre`] = pieceCible.ordre;
@@ -826,162 +810,124 @@ function convertirEnDate(dateStr) {
         });
     };
     
-
-function majAffichage() {
-    if (!voitureCourante || !hangar[voitureCourante]) return;
-    
-    document.getElementById("titre-voiture-alertes").textContent = voitureCourante;
-    const container = document.getElementById("maintenance-tables-container");
-    container.innerHTML = "";
-    
-    const groupes = [
-        { id: "Moteur", titre: "⚙️ CATÉGORIE : MOTEUR", class: "cat-moteur", cles: ["Moteur"] },
-        { id: "Transmission", titre: "⛓️ CATÉGORIE : TRANSMISSION", class: "cat-transmission", cles: ["Transmission"] },
-        { id: "Freins", titre: "🛑 CATÉGORIE : FREINS", class: "cat-freins", cles: ["Frein", "Freinage", "Freins"] },
-        { id: "Train avant", titre: "🚘 CATÉGORIE : TRAIN AVANT", class: "cat-train-avant", cles: ["Train avant"] },
-        { id: "Train arrière", titre: "🏎️ CATÉGORIE : TRAIN ARRIÈRE", class: "cat-train-arriere", cles: ["Train arrière"] }
-    ];
-
-    groupes.forEach(g => {
-        let div = document.createElement("div");
-        div.className = "category-header " + g.class;
-        div.innerHTML = `<span style="color: white; font-weight: bold;">${g.titre}</span>`;
+    // 4. Fonction majAffichage expurgée de ses doublons à la fin
+    function majAffichage() {
+        if (!voitureCourante || !hangar[voitureCourante]) return;
         
-        let table = document.createElement("table");
-        table.innerHTML = `<thead><tr><th>Pièce</th><th>Quotas heures</th><th>Status</th><th>Temps restant</th><th>Action</th></tr></thead><tbody></tbody>`;
-        let tbody = table.querySelector("tbody");
-
-        const pieces = hangar[voitureCourante].pieces || {}; 
+        document.getElementById("titre-voiture-alertes").textContent = voitureCourante;
+        const container = document.getElementById("maintenance-tables-container");
+        container.innerHTML = "";
         
-        // --- NOUVEAU CODE : Tri des pièces ---
-        let piecesDeLaCategorie = Object.entries(pieces)
-            .filter(([id, p]) => p && p.cat && g.cles.includes(p.cat))
-            .map(([id, p], index) => ({ 
-                id: id, 
-                ...p, 
-                ordre: p.ordre !== undefined ? p.ordre : index 
-            }));
+        const groupes = [
+            { id: "Moteur", titre: "⚙️ CATÉGORIE : MOTEUR", class: "cat-moteur", cles: ["Moteur"] },
+            { id: "Transmission", titre: "⛓️ CATÉGORIE : TRANSMISSION", class: "cat-transmission", cles: ["Transmission"] },
+            { id: "Freins", titre: "🛑 CATÉGORIE : FREINS", class: "cat-freins", cles: ["Frein", "Freinage", "Freins"] },
+            { id: "Train avant", titre: "🚘 CATÉGORIE : TRAIN AVANT", class: "cat-train-avant", cles: ["Train avant"] },
+            { id: "Train arrière", titre: "🏎️ CATÉGORIE : TRAIN ARRIÈRE", class: "cat-train-arriere", cles: ["Train arrière"] }
+        ];
 
-        piecesDeLaCategorie.sort((a, b) => a.ordre - b.ordre);
+        groupes.forEach(g => {
+            let div = document.createElement("div");
+            div.className = "category-header " + g.class;
+            div.innerHTML = `<span style="color: white; font-weight: bold;">${g.titre}</span>`;
+            
+            let table = document.createElement("table");
+            // 5. Correction des titres de colonnes pour qu'ils soient au nombre de 6
+            table.innerHTML = `<thead><tr><th>Pièce</th><th>Heures faites</th><th>Limite (Quotas)</th><th>Temps restant</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody>`;
+            let tbody = table.querySelector("tbody");
 
-        piecesDeLaCategorie.forEach((p) => {
-            let id = p.id;
-            let dateMontage = convertirEnDate(p.dernierChangement);
-            let heuresCalculees = (hangar[voitureCourante].historique || [])
-                .filter(s => convertirEnDate(s.date) >= dateMontage)
-                .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
+            const pieces = hangar[voitureCourante].pieces || {}; 
             
-            let margeRestante = p.limite - heuresCalculees;
-            let seuilAlerte = p.limite * 0.15;
+            let piecesDeLaCategorie = Object.entries(pieces)
+                .filter(([id, p]) => p && p.cat && g.cles.includes(p.cat))
+                .map(([id, p], index) => ({ 
+                    id: id, 
+                    ...p, 
+                    ordre: p.ordre !== undefined ? p.ordre : index 
+                }));
+
+            piecesDeLaCategorie.sort((a, b) => a.ordre - b.ordre);
+
+            piecesDeLaCategorie.forEach((p) => {
+                let id = p.id;
+                let dateMontage = convertirEnDate(p.dernierChangement);
+                let heuresCalculees = (hangar[voitureCourante].historique || [])
+                    .filter(s => convertirEnDate(s.date) >= dateMontage)
+                    .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
+                
+                let margeRestante = p.limite - heuresCalculees;
+                let seuilAlerte = p.limite * 0.15;
+                
+                let statutTexte = 'OK';
+                let statutClass = 'status-ok';
+                
+                if (margeRestante <= 0) {
+                    statutTexte = 'Changement';
+                    statutClass = 'status-danger';
+                } else if (margeRestante <= seuilAlerte) {
+                    statutTexte = 'À prévoir';
+                    statutClass = 'status-warn';
+                }
+                            
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>
+                        <strong>${p.nom || "Sans nom"}</strong>
+                        <span class="date-changement">${p.dernierChangement ? 'Montée le : ' + p.dernierChangement : 'Aucune date'}</span>
+                    </td>
+                    <td>${heuresCalculees.toFixed(2)} h</td>
+                    <td>${p.limite || 0} h</td>
+                    <td>${margeRestante.toFixed(2)} h</td>
+                    <td><span class="status ${statutClass}">${statutTexte}</span></td>
+                    <td>
+                        <div class="action-cell">
+                            <button class="btn-reset" onclick="deplacerPiece('${id}', -1, '${g.id}')" title="Monter">⬆️</button>
+                            <button class="btn-reset" onclick="deplacerPiece('${id}', 1, '${g.id}')" title="Descendre">⬇️</button>
+                            
+                            <input type="date" id="date-input-${id}" class="table-date-input">
+                            <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
+                            <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
+                            <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
             
-            let statutTexte = 'OK';
-            let statutClass = 'status-ok';
-            
-            if (margeRestante <= 0) {
-                statutTexte = 'Changement';
-                statutClass = 'status-danger';
-            } else if (margeRestante <= seuilAlerte) {
-                statutTexte = 'À prévoir';
-                statutClass = 'status-warn';
-            }
-                        
-            let tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>
-                    <strong>${p.nom || "Sans nom"}</strong>
-                    <span class="date-changement">${p.dernierChangement ? 'Montée le : ' + p.dernierChangement : 'Aucune date'}</span>
-                </td>
-                <td>${heuresCalculees.toFixed(2)} h</td>
-                <td>${p.limite || 0} h</td>
-                <td>${margeRestante.toFixed(2)} h</td>
-                <td><span class="status ${statutClass}">${statutTexte}</span></td>
-                <td>
-                    <div class="action-cell">
-                        <!-- BOUTONS MONTER/DESCENDRE -->
-                        <button class="btn-reset" onclick="deplacerPiece('${id}', -1, '${g.id}')" title="Monter">⬆️</button>
-                        <button class="btn-reset" onclick="deplacerPiece('${id}', 1, '${g.id}')" title="Descendre">⬇️</button>
-                        
-                        <input type="date" id="date-input-${id}" class="table-date-input">
-                        <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
-                        <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
-                        <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
-                    </div>
-                </td>
-            `;
-            tbody.appendChild(tr);
+            let trAjout = document.createElement("tr");
+            trAjout.innerHTML = `<td colspan="6" style="text-align:center; background:#f0f0f0; padding: 10px;">
+                <button class="btn-add-piece" onclick="ajouterPiecePourCategorie('${g.id}')">
+                    ➕ Ajouter une pièce dans ${g.id}
+                </button></td>`;
+            tbody.appendChild(trAjout);
+            container.appendChild(div);
+            container.appendChild(table);
         });
-        // --- FIN NOUVEAU CODE ---
-        
-        let trAjout = document.createElement("tr");
-        trAjout.innerHTML = `<td colspan="6" style="text-align:center; background:#f0f0f0; padding: 10px;">
-            <button class="btn-add-piece" onclick="ajouterPiecePourCategorie('${g.id}')">
-                ➕ Ajouter une pièce dans ${g.id}
-            </button></td>`;
-        tbody.appendChild(trAjout);
-        container.appendChild(div);
-        container.appendChild(table);
-    });
 
-    const tbodyCourse = document.querySelector("#table-course tbody");
-    if (tbodyCourse) {
-        tbodyCourse.innerHTML = "";
-        const donneesVoiture = hangar[voitureCourante];
-        const historique = donneesVoiture.historique || [];
-        
-        if (historique.length > 0) {
-            historique.forEach((session, index) => {
-                let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td><strong>${session.date || '-'}</strong></td>
-                    <td>${session.evenement || '-'}</td>
-                    <td>${session.circuit || '-'}</td>
-                    <td><strong>${session.duree || 0} h</strong></td>
-                    <td>${session.notes || '-'}</td>
-                    <td><button class="btn-delete-row" onclick="supprimerCourse(${index})">🗑️</button></td>
-                `;
-                tbodyCourse.appendChild(tr);
-            });
-        } else {
-            tbodyCourse.innerHTML = "<tr><td colspan='6'>Aucune session enregistrée.</td></tr>";
+        const tbodyCourse = document.querySelector("#table-course tbody");
+        if (tbodyCourse) {
+            tbodyCourse.innerHTML = "";
+            const donneesVoiture = hangar[voitureCourante];
+            const historique = donneesVoiture.historique || [];
+            
+            if (historique.length > 0) {
+                historique.forEach((session, index) => {
+                    let tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><strong>${session.date || '-'}</strong></td>
+                        <td>${session.evenement || '-'}</td>
+                        <td>${session.circuit || '-'}</td>
+                        <td><strong>${session.duree || 0} h</strong></td>
+                        <td>${session.notes || '-'}</td>
+                        <td><button class="btn-delete-row" onclick="supprimerCourse(${index})">🗑️</button></td>
+                    `;
+                    tbodyCourse.appendChild(tr);
+                });
+            } else {
+                tbodyCourse.innerHTML = "<tr><td colspan='6'>Aucune session enregistrée.</td></tr>";
+            }
         }
     }
-}
-        let trAjout = document.createElement("tr");
-        trAjout.innerHTML = `<td colspan="6" style="text-align:center; background:#f0f0f0; padding: 10px;">
-            <button class="btn-add-piece" onclick="ajouterPiecePourCategorie('${g.id}')">
-                ➕ Ajouter une pièce dans ${g.id}
-            </button></td>`;
-        tbody.appendChild(trAjout);
-        container.appendChild(div);
-        container.appendChild(table);
-    });
-    const tbodyCourse = document.querySelector("#table-course tbody");
-    if (tbodyCourse) {
-        tbodyCourse.innerHTML = "";
-        const donneesVoiture = hangar[voitureCourante];
-        const historique = donneesVoiture.historique || [];
-        
-        if (historique.length > 0) {
-            historique.forEach((session, index) => {
-                let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td><strong>${session.date || '-'}</strong></td>
-                    <td>${session.evenement || '-'}</td>
-                    <td>${session.circuit || '-'}</td>
-                    <td><strong>${session.duree || 0} h</strong></td>
-                    <td>${session.notes || '-'}</td>
-                    <td><button class="btn-delete-row" onclick="supprimerCourse(${index})">🗑️</button></td>
-                `;
-                tbodyCourse.appendChild(tr);
-            });
-        } else {
-            tbodyCourse.innerHTML = "<tr><td colspan='6'>Aucune session enregistrée.</td></tr>";
-        }
-    }
-}
-    
-    
-   import { get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"; // Importe 'get' et 'child'
     
     document.getElementById("form-voiture").addEventListener("submit", (e) => {
         e.preventDefault();
@@ -989,7 +935,6 @@ function majAffichage() {
         
         if (!nomVoiture) return;
     
-        // On utilise cataloguePiecesStandard au lieu de {}
         set(ref(db, `hangar/${nomVoiture}`), {
             historique: [{ date: new Date().toISOString().split('T')[0], evenement: "Initialisation", circuit: "N/A", duree: 0, notes: "Création châssis" }],
             pieces: cataloguePiecesStandard 
@@ -1012,7 +957,6 @@ function majAffichage() {
     
         if (checkboxes.length === 0) { alert("Veuillez sélectionner au moins une voiture."); return; }
     
-        // Utilisation d'une boucle asynchrone pour traiter chaque voiture proprement
         for (const cb of checkboxes) {
             const nomVoiture = cb.value;
             const refHistorique = ref(db, `hangar/${nomVoiture}/historique`);
@@ -1028,6 +972,6 @@ function majAffichage() {
         }
         
         alert("Sessions enregistrées !");
-        document.getElementById("form-session").reset(); // Vide le formulaire après l'envoi
+        document.getElementById("form-session").reset(); 
     });
 </script>
