@@ -568,7 +568,7 @@
         "Amortisseur G": { ref: "S013", prix: 765.09 }
     };
 
-    let hangar = {};
+   let hangar = {};
     let voitureCourante = "";
 
     function obtenirDateDuJour() { return new Date().toISOString().split('T')[0]; }
@@ -607,7 +607,6 @@
         });
     }
 
-    // 2. Correction : J'ai remis majAffichage() ici
     window.changerVoitureCourante = () => { 
         voitureCourante = document.getElementById("select-voiture").value; 
         majAffichage(); 
@@ -641,11 +640,11 @@
             limite: lim, 
             heuresActuelles: 0, 
             dernierChangement: "",
+            note: "",
             ordre: 999,
             ref: refPiece,
             prix: prixPiece
         }).then(() => {
-            // 3. Correction : majAffichage() manquant restauré
             if (typeof majAffichage === 'function') majAffichage();
         });
     };
@@ -660,6 +659,22 @@
         update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { 
             dernierChangement: "" 
         });
+    };
+
+    // NOUVELLE FONCTION : Éditer la note d'une pièce
+    window.editerNotePiece = (id) => {
+        const pieces = hangar[voitureCourante].pieces || {};
+        const piece = pieces[id];
+        if (!piece) return;
+        
+        const noteActuelle = piece.note || "";
+        const nouvelleNote = prompt(`Ajouter/Modifier une note pour ${piece.nom} :`, noteActuelle);
+        
+        if (nouvelleNote !== null) { // Si l'utilisateur n'a pas annulé
+            update(ref(db, `hangar/${voitureCourante}/pieces/${id}`), { 
+                note: nouvelleNote 
+            });
+        }
     };
 
     window.remplacerPiece = (id) => {
@@ -726,11 +741,14 @@
                     prixTotal += prixFinal;
                 }
 
+                // Affichage de la note dans le PDF si elle existe
+                const noteHtml = (pieceObj && pieceObj.note) ? `<br><em style="font-size: 11px; color: #555;">Note: ${pieceObj.note}</em>` : '';
+
                 const quota = tr.querySelectorAll('td')[1].textContent; 
                 const tempsRestant = tr.querySelectorAll('td')[3].textContent;
 
                 tr.innerHTML = `
-                    <td><strong>${nomPiece}</strong></td>
+                    <td><strong>${nomPiece}</strong>${noteHtml}</td>
                     <td>${quota}</td>
                     <td>${statusTexte}</td>
                     <td>${tempsRestant}</td>
@@ -821,7 +839,6 @@
         });
     };
     
-    // 4. Fonction majAffichage expurgée de ses doublons à la fin
     function majAffichage() {
         if (!voitureCourante || !hangar[voitureCourante]) return;
         
@@ -843,7 +860,6 @@
             div.innerHTML = `<span style="color: white; font-weight: bold;">${g.titre}</span>`;
             
             let table = document.createElement("table");
-            // 5. Correction des titres de colonnes pour qu'ils soient au nombre de 6
             table.innerHTML = `<thead><tr><th>Pièce</th><th>Heures faites</th><th>Limite (Quotas)</th><th>Temps restant</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody>`;
             let tbody = table.querySelector("tbody");
 
@@ -879,12 +895,16 @@
                     statutTexte = 'À prévoir';
                     statutClass = 'status-warn';
                 }
+
+                // Génération HTML pour la note sous la pièce
+                let htmlNote = p.note ? `<span style="display:block; font-size:11px; color:#e67e22; font-style:italic; margin-top:3px;">📝 ${p.note}</span>` : "";
                             
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td>
                         <strong>${p.nom || "Sans nom"}</strong>
                         <span class="date-changement">${p.dernierChangement ? 'Montée le : ' + p.dernierChangement : 'Aucune date'}</span>
+                        ${htmlNote}
                     </td>
                     <td>${heuresCalculees.toFixed(2)} h</td>
                     <td>${p.limite || 0} h</td>
@@ -894,6 +914,7 @@
                         <div class="action-cell">
                             <button class="btn-reset" onclick="deplacerPiece('${id}', -1, '${g.id}')" title="Monter">⬆️</button>
                             <button class="btn-reset" onclick="deplacerPiece('${id}', 1, '${g.id}')" title="Descendre">⬇️</button>
+                            <button class="btn-reset" onclick="editerNotePiece('${id}')" title="Ajouter une note">📝</button>
                             
                             <input type="date" id="date-input-${id}" class="table-date-input">
                             <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
