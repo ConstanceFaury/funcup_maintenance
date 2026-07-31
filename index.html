@@ -830,20 +830,16 @@
         html2pdf().set(opt).from(container).save();
     };
 
-   window.genererPDFHistorique = function() {
+  window.genererPDFHistorique = function() {
         if (!voitureCourante || !hangar[voitureCourante]) return;
         
         const container = document.createElement('div');
         
-        // --- CORRECTION DU BUG DE ZOOM ---
-        container.style.width = "900px"; // Largeur fixe pour forcer les proportions
-        container.style.backgroundColor = "white"; // Évite le fond transparent/noir
-        container.style.position = "absolute"; 
-        container.style.left = "-9999px"; // On le cache hors de l'écran
-        container.style.top = "0";
-        // ---------------------------------
-        
+        // On donne des dimensions et des couleurs fixes en mémoire, sans l'attacher à l'écran
+        container.style.width = "800px"; 
         container.style.padding = "20px";
+        container.style.backgroundColor = "white";
+        container.style.color = "black";
         container.style.fontFamily = "system-ui, sans-serif";
 
         const header = document.createElement('div');
@@ -922,21 +918,16 @@
         `;
         container.appendChild(style);
 
-        // On attache temporairement le conteneur au site pour que le générateur le voie correctement
-        document.body.appendChild(container);
-
         const opt = { 
             margin: [10, 10, 10, 10],
             filename: `Historique_Pieces_${voitureCourante}.pdf`, 
+            image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: 'css' }
         };
         
-        html2pdf().set(opt).from(container).save().then(() => {
-            // On le supprime une fois le PDF généré
-            document.body.removeChild(container);
-        });
+        html2pdf().set(opt).from(container).save();
     };
     
     function convertirEnDate(dateStr) {
