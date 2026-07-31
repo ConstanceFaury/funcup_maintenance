@@ -595,7 +595,7 @@ function rafraichirCheckboxes() {
         });
     }
 
-    window.changerVoitureCourante = () => { voitureCourante = document.getElementById("select-voiture").value; majAffichage(); };
+    window.changerVoitureCourante = () => { voitureCourante = document.getElementById("select-voiture").value; ; };
     window.supprimerVoitureCourante = () => {
         if (!voitureCourante) return;
         if (confirm(`Êtes-vous sûr de vouloir supprimer la voiture ${voitureCourante} ?`)) {
@@ -618,16 +618,17 @@ window.ajouterPiecePourCategorie = (cat) => {
         const refPiece = prompt("Référence de la pièce (ex: MO123) :") || "-";
         const prixPiece = parseFloat(prompt("Prix de la pièce en € :")) || 0;
         
-        push(ref(db, `hangar/${voitureCourante}/pieces/`), { 
+    push(ref(db, `hangar/${voitureCourante}/pieces/`), { 
             cat: cat, 
             nom: nom, 
             limite: lim, 
             heuresActuelles: 0, 
             dernierChangement: "",
+            ordre: 999, // <--- AJOUTE CETTE LIGNE
             ref: refPiece,
             prix: prixPiece
         }).then(() => {
-            if (typeof majAffichage === 'function') majAffichage();
+            if (typeof majAffichage === 'function') ;
         });
     };
     
@@ -777,7 +778,55 @@ function convertirEnDate(dateStr) {
     return new Date(0);
 }
 
+    window.deplacerPiece = (id, direction, idCategorie) => {
+        const pieces = hangar[voitureCourante].pieces || {};
+        
+        // Redéfinition locale des clés pour retrouver les pièces de la bonne catégorie
+        const clesParCategorie = {
+            "Moteur": ["Moteur"],
+            "Transmission": ["Transmission"],
+            "Freins": ["Frein", "Freinage", "Freins"],
+            "Train avant": ["Train avant"],
+            "Train arrière": ["Train arrière"]
+        };
+        const clesAutorisees = clesParCategorie[idCategorie] || [];
+
+        // On récupère et trie les pièces de cette catégorie exacte
+        let piecesCat = Object.entries(pieces)
+            .filter(([key, p]) => p && p.cat && clesAutorisees.includes(p.cat))
+            .map(([key, p], index) => ({ key, ordre: p.ordre !== undefined ? p.ordre : index }));
+            
+        piecesCat.sort((a, b) => a.ordre - b.ordre);
+        
+        // On cherche l'index de la pièce sur laquelle on a cliqué
+        const indexActuel = piecesCat.findIndex(p => p.key === id);
+        if (indexActuel < 0) return;
+        
+        // On calcule l'index avec lequel on va échanger la position (-1 pour monter, +1 pour descendre)
+        const indexCible = indexActuel + direction;
+        
+        // Si on essaie de monter la 1ère pièce ou descendre la dernière, on ne fait rien
+        if (indexCible < 0 || indexCible >= piecesCat.length) return;
+        
+        const pieceActuelle = piecesCat[indexActuel];
+        const pieceCible = piecesCat[indexCible];
+        
+        // On échange leurs valeurs "ordre"
+        let tempOrdre = pieceActuelle.ordre;
+        pieceActuelle.ordre = pieceCible.ordre;
+        pieceCible.ordre = tempOrdre;
+        
+        // On envoie la mise à jour simultanée à Firebase
+        const updates = {};
+        updates[`hangar/${voitureCourante}/pieces/${pieceActuelle.key}/ordre`] = pieceActuelle.ordre;
+        updates[`hangar/${voitureCourante}/pieces/${pieceCible.key}/ordre`] = pieceCible.ordre;
+        
+        update(ref(db), updates).catch(error => {
+            console.error("Erreur lors de la réorganisation :", error);
+        });
+    };
     
+
 function majAffichage() {
     if (!voitureCourante || !hangar[voitureCourante]) return;
     
@@ -804,51 +853,99 @@ function majAffichage() {
 
         const pieces = hangar[voitureCourante].pieces || {}; 
         
-        Object.entries(pieces).forEach(([id, p]) => {
-            // SÉCURITÉ : Vérifie que l'objet a bien une catégorie avant de comparer
-            if (p && p.cat && g.cles.includes(p.cat)) {
-                let dateMontage = convertirEnDate(p.dernierChangement);
-                let heuresCalculees = (hangar[voitureCourante].historique || [])
-                    .filter(s => convertirEnDate(s.date) >= dateMontage)
-                    .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
-                
-                let margeRestante = p.limite - heuresCalculees;
-                let seuilAlerte = p.limite * 0.15;
-                
-                let statutTexte = 'OK';
-                let statutClass = 'status-ok';
-                
-                if (margeRestante <= 0) {
-                    statutTexte = 'Changement';
-                    statutClass = 'status-danger';
-                } else if (margeRestante <= seuilAlerte) {
-                    statutTexte = 'À prévoir';
-                    statutClass = 'status-warn';
-                }
-                            
+        // --- NOUVEAU CODE : Tri des pièces ---
+        let piecesDeLaCategorie = Object.entries(pieces)
+            .filter(([id, p]) => p && p.cat && g.cles.includes(p.cat))
+            .map(([id, p], index) => ({ 
+                id: id, 
+                ...p, 
+                ordre: p.ordre !== undefined ? p.ordre : index 
+            }));
+
+        piecesDeLaCategorie.sort((a, b) => a.ordre - b.ordre);
+
+        piecesDeLaCategorie.forEach((p) => {
+            let id = p.id;
+            let dateMontage = convertirEnDate(p.dernierChangement);
+            let heuresCalculees = (hangar[voitureCourante].historique || [])
+                .filter(s => convertirEnDate(s.date) >= dateMontage)
+                .reduce((total, s) => total + parseFloat(s.duree || 0), 0);
+            
+            let margeRestante = p.limite - heuresCalculees;
+            let seuilAlerte = p.limite * 0.15;
+            
+            let statutTexte = 'OK';
+            let statutClass = 'status-ok';
+            
+            if (margeRestante <= 0) {
+                statutTexte = 'Changement';
+                statutClass = 'status-danger';
+            } else if (margeRestante <= seuilAlerte) {
+                statutTexte = 'À prévoir';
+                statutClass = 'status-warn';
+            }
+                        
+            let tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>
+                    <strong>${p.nom || "Sans nom"}</strong>
+                    <span class="date-changement">${p.dernierChangement ? 'Montée le : ' + p.dernierChangement : 'Aucune date'}</span>
+                </td>
+                <td>${heuresCalculees.toFixed(2)} h</td>
+                <td>${p.limite || 0} h</td>
+                <td>${margeRestante.toFixed(2)} h</td>
+                <td><span class="status ${statutClass}">${statutTexte}</span></td>
+                <td>
+                    <div class="action-cell">
+                        <!-- BOUTONS MONTER/DESCENDRE -->
+                        <button class="btn-reset" onclick="deplacerPiece('${id}', -1, '${g.id}')" title="Monter">⬆️</button>
+                        <button class="btn-reset" onclick="deplacerPiece('${id}', 1, '${g.id}')" title="Descendre">⬇️</button>
+                        
+                        <input type="date" id="date-input-${id}" class="table-date-input">
+                        <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
+                        <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
+                        <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        // --- FIN NOUVEAU CODE ---
+        
+        let trAjout = document.createElement("tr");
+        trAjout.innerHTML = `<td colspan="6" style="text-align:center; background:#f0f0f0; padding: 10px;">
+            <button class="btn-add-piece" onclick="ajouterPiecePourCategorie('${g.id}')">
+                ➕ Ajouter une pièce dans ${g.id}
+            </button></td>`;
+        tbody.appendChild(trAjout);
+        container.appendChild(div);
+        container.appendChild(table);
+    });
+
+    const tbodyCourse = document.querySelector("#table-course tbody");
+    if (tbodyCourse) {
+        tbodyCourse.innerHTML = "";
+        const donneesVoiture = hangar[voitureCourante];
+        const historique = donneesVoiture.historique || [];
+        
+        if (historique.length > 0) {
+            historique.forEach((session, index) => {
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td>
-                        <strong>${p.nom || "Sans nom"}</strong>
-                        <span class="date-changement">${p.dernierChangement ? 'Montée le : ' + p.dernierChangement : 'Aucune date'}</span>
-                    </td>
-                    <td>${heuresCalculees.toFixed(2)} h</td>
-                    <td>${p.limite || 0} h</td>
-                    <td>${margeRestante.toFixed(2)} h</td>
-                    <td><span class="status ${statutClass}">${statutTexte}</span></td>
-                    <td>
-                        <div class="action-cell">
-                            <input type="date" id="date-input-${id}" class="table-date-input">
-                            <button class="btn-reset" onclick="remplacerPiece('${id}')">🛠️</button>
-                            <button class="btn-cancel-date" onclick="annulerDateChangement('${id}')">❌</button>
-                            <button class="btn-delete-row" onclick="supprimerPiece('${id}')">🗑️</button>
-                        </div>
-                    </td>
+                    <td><strong>${session.date || '-'}</strong></td>
+                    <td>${session.evenement || '-'}</td>
+                    <td>${session.circuit || '-'}</td>
+                    <td><strong>${session.duree || 0} h</strong></td>
+                    <td>${session.notes || '-'}</td>
+                    <td><button class="btn-delete-row" onclick="supprimerCourse(${index})">🗑️</button></td>
                 `;
-                tbody.appendChild(tr);
-            }
-        });
-        
+                tbodyCourse.appendChild(tr);
+            });
+        } else {
+            tbodyCourse.innerHTML = "<tr><td colspan='6'>Aucune session enregistrée.</td></tr>";
+        }
+    }
+}
         let trAjout = document.createElement("tr");
         trAjout.innerHTML = `<td colspan="6" style="text-align:center; background:#f0f0f0; padding: 10px;">
             <button class="btn-add-piece" onclick="ajouterPiecePourCategorie('${g.id}')">
