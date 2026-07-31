@@ -359,7 +359,7 @@
     </header>
     
     <div style="margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap;">
-        <button onclick="genererPDF('tout')" style="background-color: var(--moteur-color); width: auto;">📄 PDF Liste Complète</button>
+        <button onclick="generer('tout')" style="background-color: var(--moteur-color); width: auto;">📄 PDF Liste Complète</button>
         <button onclick="genererPDF('urgent')" style="background-color: var(--danger); width: auto;">🚨 PDF Pièces à changer (Urgent)</button>
         <button onclick="genererPDFHistorique()" style="background-color: var(--warning); width: auto; color: white;">🕒 PDF Historique des pièces</button>
     </div>
@@ -830,10 +830,19 @@
         html2pdf().set(opt).from(container).save();
     };
 
-    window.genererPDFHistorique = function() {
+   window.genererPDFHistorique = function() {
         if (!voitureCourante || !hangar[voitureCourante]) return;
         
         const container = document.createElement('div');
+        
+        // --- CORRECTION DU BUG DE ZOOM ---
+        container.style.width = "900px"; // Largeur fixe pour forcer les proportions
+        container.style.backgroundColor = "white"; // Évite le fond transparent/noir
+        container.style.position = "absolute"; 
+        container.style.left = "-9999px"; // On le cache hors de l'écran
+        container.style.top = "0";
+        // ---------------------------------
+        
         container.style.padding = "20px";
         container.style.fontFamily = "system-ui, sans-serif";
 
@@ -913,6 +922,9 @@
         `;
         container.appendChild(style);
 
+        // On attache temporairement le conteneur au site pour que le générateur le voie correctement
+        document.body.appendChild(container);
+
         const opt = { 
             margin: [10, 10, 10, 10],
             filename: `Historique_Pieces_${voitureCourante}.pdf`, 
@@ -921,7 +933,10 @@
             pagebreak: { mode: 'css' }
         };
         
-        html2pdf().set(opt).from(container).save();
+        html2pdf().set(opt).from(container).save().then(() => {
+            // On le supprime une fois le PDF généré
+            document.body.removeChild(container);
+        });
     };
     
     function convertirEnDate(dateStr) {
